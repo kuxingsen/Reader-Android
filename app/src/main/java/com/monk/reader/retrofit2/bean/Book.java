@@ -13,6 +13,9 @@ public class Book {
     private Long categoryId;
     private String categoryName;
 
+    private String charSet;
+    private long size;//字节数
+
     @Override
     public String toString() {
         return "Book{" +
@@ -26,7 +29,25 @@ public class Book {
                 ", rangeValue='" + rangeValue + '\'' +
                 ", categoryId=" + categoryId +
                 ", categoryName='" + categoryName + '\'' +
+                ", charSet='" + charSet + '\'' +
+                ", size=" + size +
                 '}';
+    }
+
+    public long getSize() {
+        return size;
+    }
+
+    public void setSize(long size) {
+        this.size = size;
+    }
+
+    public String getCharSet() {
+        return charSet;
+    }
+
+    public void setCharSet(String charSet) {
+        this.charSet = charSet;
     }
 
     public String getCategoryName() {

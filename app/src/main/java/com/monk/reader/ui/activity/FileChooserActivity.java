@@ -113,6 +113,7 @@ public class FileChooserActivity extends BaseActivity {
             newBook.setBegin(0L);
             newBook.setCharset(null);
             newBook.setPath(f.getAbsolutePath());
+            newBook.setForm("local");
             Log.i(TAG, "initAfter: newBook"+newBook);
             RxBus.getDefault().post(new AddToShelfEvent(newBook));
         });

@@ -10,6 +10,7 @@ import com.monk.reader.dao.DaoSession;
 import com.monk.reader.dao.ShelfBookDao;
 import com.monk.reader.retrofit2.BannerApi;
 import com.monk.reader.retrofit2.BookApi;
+import com.monk.reader.retrofit2.BookCacheApi;
 import com.monk.reader.retrofit2.BookCatalogueApi;
 import com.monk.reader.retrofit2.CategoryApi;
 import com.monk.reader.retrofit2.RangeApi;
@@ -109,6 +110,11 @@ public class AppModule {
     @Provides
     public BookCatalogueApi initBookCatalogueApi(@Named("retrofit") Retrofit retrofit){
         return  retrofit.create(BookCatalogueApi.class);
+    }
+    @Singleton
+    @Provides
+    public BookCacheApi initBookCacheApi(@Named("retrofit") Retrofit retrofit){
+        return  retrofit.create(BookCacheApi.class);
     }
     /*
      * SharedPreferences

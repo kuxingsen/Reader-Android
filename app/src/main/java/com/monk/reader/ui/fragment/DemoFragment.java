@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import com.monk.reader.R;
 import com.monk.reader.dagger.DaggerAppComponent;
 import com.monk.reader.dao.DaoSession;
+import com.monk.reader.dao.ShelfBookDao;
 import com.monk.reader.dao.bean.ShelfBook;
 import com.monk.reader.ui.base.BaseFragment;
 import com.monk.reader.utils.SharedPreferencesUtils;
@@ -25,13 +26,13 @@ public class DemoFragment extends BaseFragment {
     @BindView(R.id.tv_text)
     TextView tvText;
     @Inject
-    DaoSession daoSession;
+    ShelfBookDao shelfBookDao;
     @Inject
     SharedPreferencesUtils sharedPreferencesUtils;
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getmApplication().getAppComponent().inject(this);
+//        getmApplication().getAppComponent().inject(this);
     }
 
 
@@ -48,7 +49,9 @@ public class DemoFragment extends BaseFragment {
     int i = 0;
     @OnClick(R.id.btn_fragment)
     public void onViewClicked() {
-        daoSession.deleteAll(ShelfBook.class);
+        getmApplication().getAppComponent().inject(this);
+
+        shelfBookDao.deleteAll();
         sharedPreferencesUtils.putInt("shelf_count",0);
     }
 }

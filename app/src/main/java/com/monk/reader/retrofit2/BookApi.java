@@ -1,5 +1,6 @@
 package com.monk.reader.retrofit2;
 
+import com.monk.reader.dao.bean.Cache;
 import com.monk.reader.retrofit2.bean.Book;
 import com.monk.reader.retrofit2.bean.Result;
 
@@ -26,6 +27,10 @@ public interface BookApi {
                                                  @Query("length") int length,//字数，单位万字
                                                  @Query("order") String order//排序，star、up_date、download、access
     );
+
+
+    @GET("book/list/cache/{index}")
+    Observable<Result<Cache>> getBookCache(@Path("index") int index);
 
     @GET("book/list/range/{id}/week")
     Observable<Result<Book>> getRangeWeekBookList(@Path("id")long id);

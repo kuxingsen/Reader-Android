@@ -23,6 +23,8 @@ public class ShelfBook implements Serializable {
     private Long begin;
     private String charset;
     private Integer position;
+    private Long bookLen;
+    private String form;
     @ToMany(referencedJoinProperty = "bookId")
     private List<BookCatalogue> bookCatalogueList;
     /** Used to resolve relations */
@@ -31,19 +33,29 @@ public class ShelfBook implements Serializable {
     /** Used for active entity operations. */
     @Generated(hash = 1373704499)
     private transient ShelfBookDao myDao;
-    @Generated(hash = 1783595021)
-    public ShelfBook(Long id, String name, String path, Long begin, String charset,
-                     Integer position) {
+    @Generated(hash = 2022019811)
+    public ShelfBook(Long id, String name, String path, Long begin, String charset, Integer position,
+            Long bookLen, String form) {
         this.id = id;
         this.name = name;
         this.path = path;
         this.begin = begin;
         this.charset = charset;
         this.position = position;
+        this.bookLen = bookLen;
+        this.form = form;
     }
 
     @Generated(hash = 937254149)
     public ShelfBook() {
+    }
+
+    public String getForm() {
+        return form;
+    }
+
+    public void setForm(String form) {
+        this.form = form;
     }
 
     @Override
@@ -55,8 +67,19 @@ public class ShelfBook implements Serializable {
                 ", begin=" + begin +
                 ", charset='" + charset + '\'' +
                 ", position=" + position +
+                ", bookLen=" + bookLen +
+                ", form='" + form + '\'' +
                 '}';
     }
+
+    public Long getBookLen() {
+        return bookLen;
+    }
+
+    public void setBookLen(Long bookLen) {
+        this.bookLen = bookLen;
+    }
+
     public Long getId() {
         return id;
     }

@@ -1,5 +1,6 @@
 package com.monk.reader.ui.activity;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -31,6 +32,9 @@ import com.monk.reader.dao.ShelfBookDao;
 import com.monk.reader.dao.bean.ShelfBook;
 import com.monk.reader.dialog.PageModeDialog;
 import com.monk.reader.dialog.SettingDialog;
+import com.monk.reader.retrofit2.BookApi;
+import com.monk.reader.retrofit2.BookCatalogueApi;
+import com.monk.reader.retrofit2.bean.Book;
 import com.monk.reader.ui.base.BaseActivity;
 import com.monk.reader.utils.BrightnessUtil;
 import com.monk.reader.utils.PageFactory;
@@ -38,11 +42,14 @@ import com.monk.reader.view.PageWidget;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.util.List;
 
 import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.OnClick;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 
 @Route(path = "/activity/reader")
 public class ReaderActivity extends BaseActivity {
@@ -77,11 +84,17 @@ public class ReaderActivity extends BaseActivity {
 
     @Inject
     public ShelfBookDao shelfBookDao;
+    @Inject
+    public BookApi bookApi;
+    @Inject
+    public BookCatalogueApi bookCatalogueApi;
 
     @Autowired(name = EXTRA_BOOK_ID)
     public long bookId;
     @Autowired(name = "from")
     public String from="local";
+    @Autowired(name = "begin")
+    public long begin=0L;
 
 
     private SettingDialog mSettingDialog;
@@ -111,6 +124,7 @@ public class ReaderActivity extends BaseActivity {
         initListener();
     }
 
+    @SuppressLint("CheckResult")
     protected void initData() {
 
         toolbar.setTitle("");
@@ -130,18 +144,46 @@ public class ReaderActivity extends BaseActivity {
         hideSystemUI();
 
         Log.i(TAG, "initData: bookId:"+bookId+"   from:"+from);
-
-        ShelfBook shelfBook = shelfBookDao.load(bookId);
         bookPage.setPageMode(config.getPageMode());
         pageFactory.setPageWidget(bookPage);
 
-        try {
-            pageFactory.openBook(shelfBook);
-        } catch (IOException e) {
-            e.printStackTrace();
-            Toast.makeText(this, "打开电子书失败", Toast.LENGTH_SHORT).show();
-        }
+        if ("local".equals(from)) {
+            ShelfBook shelfBook = shelfBookDao.load(bookId);
 
+            try {
+                pageFactory.openBook(shelfBook);
+            } catch (IOException e) {
+                e.printStackTrace();
+                Toast.makeText(this, "打开电子书失败", Toast.LENGTH_SHORT).show();
+            }
+        }
+        if("network".equals(from)){
+            bookApi.getBook(bookId)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(result -> {
+                        Log.i(TAG, "initAfter: " + result);
+                        List<Book> bookList = result.getData();
+                        if(bookList == null || bookList.size() == 0) return;
+                        Book book = bookList.get(0);
+                        ShelfBook shelfBook = new ShelfBook();
+                        shelfBook.setBegin(begin);
+                        shelfBook.setName(book.getName());
+                        shelfBook.setId(bookId);//todo
+                        shelfBook.setForm("network");
+                        shelfBook.setPath(bookId+"");
+                        shelfBook.setCharset(book.getCharSet());
+                        shelfBook.setBookLen(book.getSize());
+
+                        try {
+                            pageFactory.openBook(shelfBook);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            Toast.makeText(this, "打开电子书失败", Toast.LENGTH_SHORT).show();
+                        }
+
+                    }, Throwable::printStackTrace);
+        }
         initDayOrNight();
 
     }

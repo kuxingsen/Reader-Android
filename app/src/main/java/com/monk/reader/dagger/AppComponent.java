@@ -23,6 +23,7 @@ import com.monk.reader.ui.fragment.DemoFragment;
 import com.monk.reader.ui.fragment.FileFragment;
 import com.monk.reader.ui.fragment.HomeFragment;
 import com.monk.reader.ui.fragment.RangeFragment;
+import com.monk.reader.utils.BookUtil;
 import com.monk.reader.utils.PageFactory;
 import com.monk.reader.utils.SharedPreferencesUtils;
 
@@ -53,4 +54,5 @@ public interface AppComponent {
     void inject(RangeFragment rangeFragment);
 
     void inject(PageFactory pageFactory);
+    void inject(BookUtil bookUtil);
 }

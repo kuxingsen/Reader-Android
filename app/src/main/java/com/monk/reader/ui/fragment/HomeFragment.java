@@ -23,6 +23,7 @@ import com.monk.reader.eventbus.RxEvent;
 import com.monk.reader.eventbus.ShowActionBarCancel;
 import com.monk.reader.ui.activity.ReaderActivity;
 import com.monk.reader.ui.base.BaseFragment;
+import com.monk.reader.utils.SharedPreferencesUtils;
 import com.monk.reader.view.DragGridView;
 
 import java.io.File;
@@ -45,6 +46,9 @@ public class HomeFragment extends BaseFragment {
 
     @Inject
     DaoSession daoSession;
+    @Inject
+    SharedPreferencesUtils sharedPreferencesUtils;
+
     @BindView(R.id.toolbar)
     Toolbar toolbar;
     @BindView(R.id.tv_cancel)
@@ -76,6 +80,8 @@ public class HomeFragment extends BaseFragment {
         Log.i(TAG, "initAfter: ");
         // 删除窗口背景
 //        mActivity.getWindow().setBackgroundDrawable(null);
+//        daoSession.deleteAll(ShelfBook.class);
+//        sharedPreferencesUtils.putInt("shelf_count",0);
 
         shelfBookList = daoSession.queryBuilder(ShelfBook.class).orderRaw("position").list();
         adapter = new ShelfAdapter(mActivity, shelfBookList);
@@ -121,6 +127,7 @@ public class HomeFragment extends BaseFragment {
                     mActivity.overridePendingTransition(R.anim.in_from_right, R.anim.out_to_left);
                     Bundle bundle = new Bundle();
                     bundle.putLong(ReaderActivity.EXTRA_BOOK_ID, shelfBook.getId());
+                    bundle.putString("from", "local");
                     ARouter.getInstance().build("/activity/reader")
                             .with(bundle)
                             .navigation();

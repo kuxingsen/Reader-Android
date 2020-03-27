@@ -7,6 +7,7 @@ import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -22,11 +23,15 @@ import com.monk.reader.R;
 import com.monk.reader.adapter.CatalogueAdapter;
 import com.monk.reader.dao.ShelfBookDao;
 import com.monk.reader.dao.bean.BookCatalogue;
+import com.monk.reader.dao.bean.ShelfBook;
 import com.monk.reader.dao.model.StoryArticle;
+import com.monk.reader.eventbus.AddToShelfEvent;
+import com.monk.reader.eventbus.RxBus;
 import com.monk.reader.retrofit2.BookApi;
 import com.monk.reader.retrofit2.BookCatalogueApi;
 import com.monk.reader.retrofit2.bean.Book;
 import com.monk.reader.ui.base.BaseActivity;
+import com.monk.reader.utils.BookUtil;
 
 import java.util.List;
 
@@ -34,6 +39,7 @@ import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
@@ -82,6 +88,10 @@ public class BookInfoActivity extends BaseActivity {
 
     @Autowired(name = "bookId")
     public long bookId = 1;
+    private String bookName;
+    private String bookPicture;
+    private long bookSize;
+    private String bookCharSet;
 
     @Override
     protected int inflateLayout() {
@@ -112,16 +122,18 @@ public class BookInfoActivity extends BaseActivity {
                     List<Book> data = result.getData();
                     if (data == null || data.size() == 0) return;
                     Book book = data.get(0);
-                    String name = book.getName();
+                    bookName = book.getName();
+                    bookPicture = book.getPicture();
+                    bookSize = book.getSize();
+                    bookCharSet = book.getCharSet();
                     String author = book.getAuthor();
                     String introduction = book.getIntroduction();
-                    String picture = book.getPicture();
                     String upDate = book.getUpDate();
                     int length = book.getLength();
                     String categoryName = book.getCategoryName();
 
-                    tvTitle.setText(name);
-                    tvName.setText(name);
+                    tvTitle.setText(bookName);
+                    tvName.setText(bookName);
                     SpannableString authorString = new SpannableString(author + " 著");
                     authorString.setSpan(new ForegroundColorSpan(Color.parseColor("#ee3f3f")), 0, authorString.length() - 1,
                             Spanned.SPAN_INCLUSIVE_INCLUSIVE);
@@ -129,7 +141,7 @@ public class BookInfoActivity extends BaseActivity {
                     tvIntro.setText(introduction);
                     tvLength.setText(length+" 万字");
                     tvCategory.setText(categoryName);
-                    Glide.with(this).load(picture).into(ivPicture);
+                    Glide.with(this).load(bookPicture).into(ivPicture);
                     tvUpDate.setText("上传于 " + upDate);
 
                 }, Throwable::printStackTrace);
@@ -146,65 +158,40 @@ public class BookInfoActivity extends BaseActivity {
                     rvShowCatalogue.setAdapter(catalogueAdapter);
 
                 }, Throwable::printStackTrace);
-/*
+  }
 
-        List<DownloadInfo> infos = DownloadInfo.DAO.queryBuilder().where(DownloadInfoDao.Properties.BookId.eq(mStoryArticle.getId())).list();
-        if (infos != null && infos.size() > 0) {
-            DownloadInfo info = infos.get(0);
-            mDownloadState = info.getState();
-            if (mDownloadState == DownloadInfo.FINISH) {
-                tv_book_info_download.setText("已下载");
-            } else if (mDownloadState == DownloadInfo.DOWNLOADING || mDownloadState == DownloadInfo.WAITING) {
-                tv_book_info_download.setText("下载中...");
-            } else {
-                tv_book_info_download.setText("下载");
-            }
-        } else {
-            tv_book_info_download.setText("下载");
-        }
-*/
-/*
-        List<StoryArticle> list = mDao.queryBuilder().where(StoryArticleDao.Properties.Id.eq(mStoryArticle.getId())).list();
-        if (list != null && list.size() > 0) {
-            info_add_to_shelf_tv.setEnabled(false);
-            info_add_to_shelf_tv.setText("已加入书架");
-        }*/
-    }
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        // TODO: add setContentView(...) invocation
-        ButterKnife.bind(this);
-    }
-/*
     @OnClick(R.id.tv_start_read)
     public void tv_start_read_click(View view) {
         switch (view.getId()) {
             case R.id.tv_start_read:
-                int readCount = SharedPreferencesUtil.getInstance().getInt(Constant.BOOK_SHELF_SORT_KEY, 0) + 1;
-                SharedPreferencesUtil.getInstance().putInt(Constant.BOOK_SHELF_SORT_KEY, readCount);
-                mStoryArticle.setReadCount(readCount);
 
-//                RxBus.getDefault().post(new AddToShelfEvent());
+                overridePendingTransition(R.anim.in_from_right, R.anim.out_to_left);
                 Bundle bundle = new Bundle();
-                bundle.putParcelable(Constant.BOOK_INFO, mStoryArticle);
-                toActivity(ReadActivity1.class, bundle);
+                bundle.putLong(ReaderActivity.EXTRA_BOOK_ID, bookId);
+                bundle.putString("from", "network");
+                ARouter.getInstance().build("/activity/reader")
+                        .with(bundle)
+                        .navigation();
+
                 break;
         }
     }
 
     @OnClick(R.id.info_add_to_shelf_tv)
     public void info_add_to_shelf_tv_click(View view) {
-        int readCount = SharedPreferencesUtil.getInstance().getInt(Constant.BOOK_SHELF_SORT_KEY, 0) + 1;
-        SharedPreferencesUtil.getInstance().putInt(Constant.BOOK_SHELF_SORT_KEY, readCount);
-        mStoryArticle.setReadCount(readCount);
-        mDao.insertOrReplace(mStoryArticle);
-        RxBus.getDefault().post(new AddToShelfEvent());
+        ShelfBook shelfBook = new ShelfBook();
+        shelfBook.setPath(bookId+"");
+        shelfBook.setForm("network");
+        shelfBook.setBookLen(bookSize);
+        shelfBook.setCharset(bookCharSet);
+        shelfBook.setName(bookName);
+        shelfBook.setBegin(0L);//todo
+        RxBus.getDefault().post(new AddToShelfEvent(shelfBook));
         info_add_to_shelf_tv.setEnabled(false);
         info_add_to_shelf_tv.setText("已加入书架");
     }
-
+/*
     @OnClick(R.id.tv_book_info_download)
     public void tv_book_info_download_click(View v) {
         if (mStoryArticle == null) return;

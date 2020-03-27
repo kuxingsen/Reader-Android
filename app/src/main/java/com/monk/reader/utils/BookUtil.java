@@ -1,14 +1,21 @@
 package com.monk.reader.utils;
 
+import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.os.Environment;
 import android.text.TextUtils;
 import android.util.Log;
 
 
+import com.monk.reader.BaseApplication;
 import com.monk.reader.dao.bean.BookCatalogue;
 import com.monk.reader.dao.bean.Cache;
 import com.monk.reader.dao.bean.ShelfBook;
+import com.monk.reader.eventbus.InvalidateEvent;
+import com.monk.reader.eventbus.RxBus;
+import com.monk.reader.retrofit2.BookApi;
+import com.monk.reader.retrofit2.BookCacheApi;
+import com.monk.reader.retrofit2.BookCatalogueApi;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -18,7 +25,13 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
+import javax.inject.Inject;
+
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 
 /**
  * Created by Administrator on 2016/8/11 0011.
@@ -30,10 +43,11 @@ public class BookUtil {
     public static final int cachedSize = 30000;
 //    protected final ArrayList<WeakReference<char[]>> myArray = new ArrayList<>();
 
-    protected final ArrayList<Cache> myArray = new ArrayList<>();
+    protected List<Cache> myArray = new ArrayList<>();
     //目录
     private List<BookCatalogue> directoryList = new ArrayList<>();
 
+    private String from;
     private String bookName;
     private String bookPath;
     private long bookLen;
@@ -41,7 +55,15 @@ public class BookUtil {
     private long position;
     private ShelfBook shelfBook;
 
-    public BookUtil() {
+    @Inject
+    BookApi bookApi;
+    @Inject
+    BookCatalogueApi bookCatalogueApi;
+    @Inject
+    BookCacheApi bookCacheApi;
+
+    public BookUtil(BaseApplication baseApplication) {
+        baseApplication.getAppComponent().inject(this);
         File file = new File(cachedPath);
         if (!file.exists()) {
             FileUtils.createDir(cachedPath);
@@ -56,7 +78,11 @@ public class BookUtil {
             cleanCacheFile();
             this.bookPath = shelfBook.getPath();
             bookName = shelfBook.getName();
+
+            from = shelfBook.getForm();
             cacheBook();
+
+
         }
     }
 
@@ -84,26 +110,6 @@ public class BookUtil {
             position -= 1;
         }
         return result;
-    }
-
-    public char[] nextLine() {
-        if (position >= bookLen) {
-            return null;
-        }
-        String line = "";
-        while (position < bookLen) {
-            int word = next(false);
-            if (word == -1) {
-                break;
-            }
-            char wordChar = (char) word;
-            if ((wordChar + "").equals("\r") && (((char) next(true)) + "").equals("\n")) {
-                next(false);
-                break;
-            }
-            line += wordChar;
-        }
-        return line.toCharArray();
     }
 
     public char[] preLine() {
@@ -172,6 +178,7 @@ public class BookUtil {
     }
 
     //缓存书本
+    @SuppressLint("CheckResult")
     private void cacheBook() throws IOException {
         String m_strCharsetName;
         if (TextUtils.isEmpty(shelfBook.getCharset())) {
@@ -187,54 +194,61 @@ public class BookUtil {
         } else {
             m_strCharsetName = shelfBook.getCharset();
         }
-        File file = new File(bookPath);
-        InputStreamReader reader = new InputStreamReader(new FileInputStream(file), m_strCharsetName);
-        int index = 0;
-        bookLen = 0;
-        directoryList.clear();
-        myArray.clear();
-        while (true) {
-            char[] buf = new char[cachedSize];
-            int result = reader.read(buf);
-            if (result == -1) {
-                reader.close();
-                break;
-            }
+        if("network".equals(bookPath)){
+            Log.i(TAG, "cacheBook: network");
+            bookLen = shelfBook.getBookLen();
+            bookCacheApi.getCacheByBookId(shelfBook.getId())
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(result -> {
+                        Log.i(TAG, "cacheBook: "+result);
+                        myArray = result.getData();
+                    },Throwable::printStackTrace);
 
-            String bufStr = new String(buf);
-//            bufStr = bufStr.replaceAll("\r\n","\r\n\u3000\u3000");
-//            bufStr = bufStr.replaceAll("\u3000\u3000+[ ]*","\u3000\u3000");
-            bufStr = bufStr.replaceAll("\r\n+\\s*", "\r\n\u3000\u3000");
-//            bufStr = bufStr.replaceAll("\r\n[ {0,}]","\r\n\u3000\u3000");
-//            bufStr = bufStr.replaceAll(" ","");
-            bufStr = bufStr.replaceAll("\u0000", "");
-            buf = bufStr.toCharArray();
-            bookLen += buf.length;
-
-            Cache cache = new Cache();
-            cache.setSize(buf.length);
-            cache.setData(new WeakReference<char[]>(buf));
-
-//            bookLen += result;
-            myArray.add(cache);
-//            myArray.add(new WeakReference<char[]>(buf));
-//            myArray.set(index,);
-            try {
-                File cacheBook = new File(fileName(index));
-                if (!cacheBook.exists()) {
-                    Log.i(TAG, "cacheBook: create");
-                    cacheBook.createNewFile();
+        }else {
+            Log.i(TAG, "cacheBook: local");
+            File file = new File(bookPath);
+            InputStreamReader reader = new InputStreamReader(new FileInputStream(file), m_strCharsetName);
+            int index = 0;
+            bookLen = 0;
+            directoryList.clear();
+            myArray.clear();
+            while (true) {
+                char[] buf = new char[cachedSize];
+                int result = reader.read(buf);
+                if (result == -1) {
+                    reader.close();
+                    break;
                 }
-                Log.i(TAG, "cacheBook: before write ");
-                final OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(fileName(index)), "UTF-16LE");
-                writer.write(buf);
-                writer.close();
-            } catch (IOException e) {
-                throw new RuntimeException("Error during writing " + fileName(index));
-            }
-            index++;
-        }
 
+                String bufStr = new String(buf);
+                bufStr = bufStr.replaceAll("\r\n+\\s*", "\r\n\u3000\u3000");
+                bufStr = bufStr.replaceAll("\u0000", "");
+                buf = bufStr.toCharArray();
+                bookLen += buf.length;
+
+                Cache cache = new Cache();
+                Log.i(TAG, "cacheBook: " + (cachedSize == buf.length));
+                cache.setSize(buf.length);
+                cache.setData(new WeakReference<char[]>(buf));
+
+                myArray.add(cache);
+                try {
+                    File cacheBook = new File(fileName(index));
+                    if (!cacheBook.exists()) {
+                        Log.i(TAG, "cacheBook: create");
+                        cacheBook.createNewFile();
+                    }
+                    Log.i(TAG, "cacheBook: before write ");
+                    final OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(fileName(index)), "UTF-16LE");
+                    writer.write(buf);
+                    writer.close();
+                } catch (IOException e) {
+                    throw new RuntimeException("Error during writing " + fileName(index));
+                }
+                index++;
+            }
+        }
         new Thread() {
             @Override
             public void run() {
@@ -286,34 +300,50 @@ public class BookUtil {
     }
 
     //获取书本缓存
+    @SuppressLint("CheckResult")
     public char[] block(int index) {
         if (myArray.size() == 0) {
             return new char[1];
         }
         char[] block = myArray.get(index).getData().get();
         if (block == null) {
-            try {
-                File file = new File(fileName(index));
-                int size = (int) file.length();
-                if (size < 0) {
+            if("local".equals(from)) {
+                try {
+                    File file = new File(fileName(index));
+                    int size = (int) file.length();
+                    if (size < 0) {
+                        throw new RuntimeException("Error during reading " + fileName(index));
+                    }
+                    block = new char[size / 2];
+                    InputStreamReader reader =
+                            new InputStreamReader(
+                                    new FileInputStream(file),
+                                    "UTF-16LE"
+                            );
+                    if (reader.read(block) != block.length) {
+                        throw new RuntimeException("Error during reading " + fileName(index));
+                    }
+                    reader.close();
+                } catch (IOException e) {
                     throw new RuntimeException("Error during reading " + fileName(index));
                 }
-                block = new char[size / 2];
-                InputStreamReader reader =
-                        new InputStreamReader(
-                                new FileInputStream(file),
-                                "UTF-16LE"
-                        );
-                if (reader.read(block) != block.length) {
-                    throw new RuntimeException("Error during reading " + fileName(index));
-                }
-                reader.close();
-            } catch (IOException e) {
-                throw new RuntimeException("Error during reading " + fileName(index));
+                Cache cache = myArray.get(index);
+                cache.setData(new WeakReference<char[]>(block));
+            }else {
+                bookApi.getBookCache(index)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(result -> {
+                            List<Cache> data = result.getData();
+                            if(data==null || data.size() == 0) return;
+                            Cache cache = data.get(0);
+                            myArray.get(index).setData(cache.getData());
+
+                            RxBus.getDefault().post(new InvalidateEvent());
+
+                        },Throwable::printStackTrace);
+                block = new char[1];
             }
-            Cache cache = myArray.get(index);
-            cache.setData(new WeakReference<char[]>(block));
-//            myArray.set(index, new WeakReference<char[]>(block));
         }
         return block;
     }

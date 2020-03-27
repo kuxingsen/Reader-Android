@@ -68,8 +68,6 @@ public class PageFactory {
     private String date;
     //进度格式
     private DecimalFormat df;
-    //电池边界宽度
-    private float mBorderWidth;
     // 上下与边缘的距离
     private float marginHeight;
     // 左右与边缘的距离
@@ -78,10 +76,6 @@ public class PageFactory {
     private float marginWidth;
     //行间距
     private float lineSpace;
-    //段间距
-    private float paragraphSpace;
-    //字高度
-    private float fontHeight;
     //文字画笔
     private Paint mPaint;
     //加载画笔
@@ -97,37 +91,12 @@ public class PageFactory {
 
     //背景图片
     private Bitmap m_book_bg = null;
-    //当前显示的文字
-//    private StringBuilder word = new StringBuilder();
-    //当前总共的行
-//    private Vector<String> m_lines = new Vector<>();
-//    // 当前页起始位置
-//    private long m_mbBufBegin = 0;
-//    // 当前页终点位置
-//    private long m_mbBufEnd = 0;
-//    // 之前页起始位置
-//    private long m_preBegin = 0;
-//    // 之前页终点位置
-//    private long m_preEnd = 0;
-    // 图书总长度
-//    private long m_mbBufLen = 0;
-
-    //文件编码
-//    private String m_strCharsetName = "GBK";
     //当前是否为第一页
     private boolean m_isfirstPage;
     //当前是否为最后一页
     private boolean m_islastPage;
     //书本widget
     private PageWidget mBookPageWidget;
-    //    //书本所有段
-//    List<String> allParagraph;
-//    //书本所有行
-//    List<String> allLines = new ArrayList<>();
-    //现在的进度
-    private float currentProgress;
-    //目录
-//    private List<BookCatalogue> directoryList = new ArrayList<>();
     //书本路径
     private String bookPath = "";
     //书本名字
@@ -140,7 +109,6 @@ public class PageFactory {
     private BookUtil mBookUtil;
     private PageEvent mPageEvent;
     private TRPage currentPage;
-    private TRPage prePage;
     private TRPage cancelPage;
     private BookTask bookTask;
 
@@ -165,7 +133,7 @@ public class PageFactory {
 
     private PageFactory(Context context) {
         ((BaseApplication)context).getAppComponent().inject(this);
-        mBookUtil = new BookUtil();
+        mBookUtil = new BookUtil((BaseApplication)context);
         mBookUtil.setUpdateShelfBookInfoCallBack(book -> shelfBookDao.update(book));
         mContext = context.getApplicationContext();
         config = Config.getInstance();
@@ -196,7 +164,6 @@ public class PageFactory {
         marginWidth = mContext.getResources().getDimension(R.dimen.readingMarginWidth);
         marginHeight = mContext.getResources().getDimension(R.dimen.readingMarginHeight);
         lineSpace = context.getResources().getDimension(R.dimen.reading_line_spacing);
-        paragraphSpace = context.getResources().getDimension(R.dimen.reading_paragraph_spacing);
         mVisibleWidth = mWidth - marginWidth * 2;
         mVisibleHeight = mHeight - marginHeight * 2;
 
@@ -214,7 +181,6 @@ public class PageFactory {
         waitPaint.setSubpixelText(true);// 设置该项为true，将有助于文本在LCD屏幕上的显示效果
         calculateLineCount();
 
-        mBorderWidth = mContext.getResources().getDimension(R.dimen.reading_board_battery_border_width);
 
         initBg(config.getDayOrNight());
         measureMarginWidth();
@@ -258,9 +224,6 @@ public class PageFactory {
     //初始化背景
     private void initBg(Boolean isNight) {
         if (isNight) {
-            //设置背景
-//            setBgBitmap(BitmapUtil.decodeSampledBitmapFromResource(
-//                    mContext.getResources(), R.drawable.main_bg, mWidth, mHeight));
             Bitmap bitmap = Bitmap.createBitmap(mWidth, mHeight, Bitmap.Config.RGB_565);
             Canvas canvas = new Canvas(bitmap);
             canvas.drawColor(Color.BLACK);
@@ -312,7 +275,7 @@ public class PageFactory {
         }
 
         //更新数据库进度
-        if (currentPage != null && shelfBook != null) {
+        if (currentPage != null && shelfBook != null && "local".equals(shelfBook.getForm())) {
             new Thread() {
                 @Override
                 public void run() {
@@ -346,7 +309,6 @@ public class PageFactory {
         paint.setColor(getTextColor());
         //画进度及时间
         float fPercent = (float) (currentPage.getBegin() * 1.0 / mBookUtil.getBookLen());//进度
-        currentProgress = fPercent;
         if (mPageEvent != null) {
             mPageEvent.changeProgress(fPercent);
         }
@@ -401,7 +363,6 @@ public class PageFactory {
 
         cancelPage = currentPage;
         onDraw(mBookPageWidget.getCurPage(), currentPage.getLines(), true);
-        prePage = currentPage;
         currentPage = getNextPage();
         onDraw(mBookPageWidget.getNextPage(), currentPage.getLines(), true);
         Log.e("nextPage", "nextPagenext");
@@ -796,7 +757,6 @@ public class PageFactory {
         mBookPageWidget = null;
         mPageEvent = null;
         cancelPage = null;
-        prePage = null;
         currentPage = null;
     }
 

@@ -38,6 +38,7 @@ public class FragmentController {
     }
 
     private void initFragment() {
+
         lists = new ArrayList<>();
         lists.add(new HomeFragment());
         BookcaseFragment bookcaseFragment = new BookcaseFragment();

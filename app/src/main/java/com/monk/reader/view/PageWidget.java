@@ -15,12 +15,19 @@ import android.view.animation.LinearInterpolator;
 import android.widget.Scroller;
 
 import com.monk.reader.constant.Config;
+import com.monk.reader.eventbus.InvalidateEvent;
+import com.monk.reader.eventbus.RxBus;
+import com.monk.reader.eventbus.RxEvent;
 import com.monk.reader.utils.PageFactory;
 import com.monk.reader.view.animation.AnimationProvider;
 import com.monk.reader.view.animation.CoverAnimation;
 import com.monk.reader.view.animation.NoneAnimation;
 import com.monk.reader.view.animation.SimulationAnimation;
 import com.monk.reader.view.animation.SlideAnimation;
+
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 
 
 /**
@@ -56,6 +63,9 @@ public class PageWidget extends View {
     private int mBgColor = 0xFFCEC29C;
     private TouchListener mTouchListener;
 
+
+    private Disposable mDisposable;
+
     public PageWidget(Context context) {
         this(context, null);
     }
@@ -70,6 +80,7 @@ public class PageWidget extends View {
         initPage();
         mScroller = new Scroller(getContext(), new LinearInterpolator());
         mAnimationProvider = new SimulationAnimation(mCurPageBitmap, mNextPageBitmap, mScreenWidth, mScreenHeight);
+        registerRxBus();
     }
 
     private void initPage() {
@@ -83,6 +94,24 @@ public class PageWidget extends View {
         mScreenHeight = metric.heightPixels;
         mCurPageBitmap = Bitmap.createBitmap(mScreenWidth, mScreenHeight, Bitmap.Config.RGB_565);      //android:LargeHeap=true  use in  manifest application
         mNextPageBitmap = Bitmap.createBitmap(mScreenWidth, mScreenHeight, Bitmap.Config.RGB_565);
+    }
+
+    private void registerRxBus() {
+        mDisposable = RxBus.getDefault().toObservable(RxEvent.class)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(rxEvent -> {
+                    if (rxEvent != null) {
+                        onEventMainThread(rxEvent);
+                    }
+                });
+    }
+
+    protected void onEventMainThread(RxEvent rxEvent) {
+        if(rxEvent instanceof InvalidateEvent)
+        {
+            postInvalidate();
+        }
     }
 
     public void setPageMode(int pageMode) {
@@ -282,6 +311,8 @@ public class PageWidget extends View {
         super.computeScroll();
     }
 
+
+
     public void abortAnimation() {
         if (!mScroller.isFinished()) {
             mScroller.abortAnimation();
@@ -297,6 +328,7 @@ public class PageWidget extends View {
     public void setTouchListener(TouchListener mTouchListener) {
         this.mTouchListener = mTouchListener;
     }
+
 
     public interface TouchListener {
         void center();
