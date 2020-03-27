@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:scrollbarSize="0dp"
+    >
+
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <!--    轮播图-->
+    <com.monk.reader.view.Banner
+        android:id="@+id/view_pager_banner"
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <!--    搜索框-转场动画-->
+
+        <EditText
+            android:id="@+id/sv_search"
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:paddingLeft="5dp"
+            android:layout_marginHorizontal="20dp"
+            android:textSize="20sp"
+            android:hint="@string/search"
+            android:background="@drawable/common_button"
+            android:transitionName="simple_search_name"
+            app:layout_constraintTop_toBottomOf="@id/view_pager_banner"/>
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/search_button"
+            app:layout_constraintStart_toEndOf="@id/sv_search"
+            app:layout_constraintTop_toTopOf="@id/sv_search"
+            />
+    <!--    分类-->
+<androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_show_category"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="10dp"
+        app:layout_constraintTop_toBottomOf="@+id/sv_search"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        />
+
+<!--    最近更新-->
+    <TextView
+        android:id="@+id/tv_new"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="最近更新"
+        android:textSize="20sp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/rv_show_category"
+        />
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/common_button"
+        android:text="更多"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/tv_new"/>
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_show_new"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/tv_new"
+        />
+<!--    排行榜-->
+    <TextView
+        android:id="@+id/tv_range"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="20dp"
+        android:gravity="center_horizontal"
+        android:text="排行榜"
+        app:layout_constraintTop_toBottomOf="@id/rv_show_new"/>
+    <!--<androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_show_range"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/tv_range"
+        app:layout_constraintBottom_toBottomOf="parent"
+        />-->
+    <TextView
+        android:id="@+id/tv_range_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:text="@string/app_name"
+        app:layout_constraintTop_toTopOf="parent"
+        />
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tl_range"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/tv_range"/>
+    <androidx.viewpager.widget.ViewPager
+        android:id="@+id/vp_range"
+        android:layout_width="match_parent"
+        android:layout_height="1100dp"
+        app:layout_constraintTop_toBottomOf="@id/tl_range"/>
+</androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>
+

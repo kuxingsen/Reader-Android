@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+    <TextView
+        android:id="@+id/tv_range"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:text="@string/app_name"
+        app:layout_constraintTop_toTopOf="parent"
+        />
+    <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tl_range"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/tv_range"/>
+    <androidx.viewpager.widget.ViewPager
+        android:id="@+id/vp_range"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/tl_range"/>
+</androidx.constraintlayout.widget.ConstraintLayout>

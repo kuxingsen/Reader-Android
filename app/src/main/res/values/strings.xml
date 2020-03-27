@@ -1,0 +1,58 @@
+<resources>
+    <string name="app_name">MyReader</string>
+    <string name="home_bookcase">书架</string>
+    <string name="home_bookstore">书城</string>
+    <string name="home_myself">我的</string>
+    <string name="username">用户</string>
+    <string name="logo">logo</string>
+    <string name="welcome">欢迎</string>
+    <string name="password">密码</string>
+    <string name="login">登录</string>
+    <string name="exit">退出</string>
+    <string name="search_book">查找书城</string>
+    <string name="search">查找</string>
+    <string name="title_default">完本屋</string>
+    <string name="title_cancel">取消</string>
+    <string name="title_shelf_back">返回书架</string>
+
+    <string name="read_setting_directory">目录</string>
+    <string name="read_setting_night">夜间</string>
+    <string name="read_setting_day">日间</string>
+    <string name="read_setting_pagemode">翻页</string>
+    <string name="read_setting_set">设置</string>
+    <string name="read_setting_pre">上一章</string>
+    <string name="read_setting_next">下一章</string>
+
+
+    <string name="setting_system">系统</string>
+    <string name="setting_dark">暗</string>
+    <string name="setting_bright">亮</string>
+    <string name="setting_add">A+</string>
+    <string name="setting_subtract">A-</string>
+    <string name="setting_default">默认</string>
+
+
+    <string name="page_mode_simulation">仿真</string>
+    <string name="page_mode_cover">覆盖</string>
+    <string name="page_mode_slide">滑动</string>
+    <string name="page_mode_none">无</string>
+
+    <string name="readseting">设置</string>
+
+    <string name="dialog_confirm">确定</string>
+    <string name="dialog_cancel">取消</string>
+    <!--书城-->
+    <string name="bookcase_male">男频</string>
+    <string name="bookcase_female">女频</string>
+    <!--历史记录-->
+    <string name="history_title">浏览历史</string>
+    <string name="history_clear">清空</string>
+
+    <string name="book_info_start">开始看书</string>
+    <string name="book_info_download">下载</string>
+    <string name="book_info_add">加入书架</string>
+    <string name="book_info_recommend">猜你喜欢</string>
+    <string name="book_info_more_info">更多图书信息</string>
+    <string name="book_info_hint">本图书由网友上传，若网友上传的图书侵犯了您的权益，请您联系客服。</string>
+
+</resources>
