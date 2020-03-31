@@ -31,7 +31,8 @@ public class ShelfBookDao extends AbstractDao<ShelfBook, Long> {
         public final static Property Charset = new Property(4, String.class, "charset", false, "CHARSET");
         public final static Property Position = new Property(5, Integer.class, "position", false, "POSITION");
         public final static Property BookLen = new Property(6, Long.class, "bookLen", false, "BOOK_LEN");
-        public final static Property Form = new Property(7, String.class, "form", false, "FORM");
+        public final static Property From = new Property(7, String.class, "from", false, "FROM");
+        public final static Property Picture = new Property(8, String.class, "picture", false, "PICTURE");
     }
 
     private DaoSession daoSession;
@@ -57,7 +58,8 @@ public class ShelfBookDao extends AbstractDao<ShelfBook, Long> {
                 "\"CHARSET\" TEXT," + // 4: charset
                 "\"POSITION\" INTEGER," + // 5: position
                 "\"BOOK_LEN\" INTEGER," + // 6: bookLen
-                "\"FORM\" TEXT);"); // 7: form
+                "\"FROM\" TEXT," + // 7: from
+                "\"PICTURE\" TEXT);"); // 8: picture
     }
 
     /** Drops the underlying database table. */
@@ -105,9 +107,14 @@ public class ShelfBookDao extends AbstractDao<ShelfBook, Long> {
             stmt.bindLong(7, bookLen);
         }
  
-        String form = entity.getForm();
-        if (form != null) {
-            stmt.bindString(8, form);
+        String from = entity.getFrom();
+        if (from != null) {
+            stmt.bindString(8, from);
+        }
+ 
+        String picture = entity.getPicture();
+        if (picture != null) {
+            stmt.bindString(9, picture);
         }
     }
 
@@ -150,9 +157,14 @@ public class ShelfBookDao extends AbstractDao<ShelfBook, Long> {
             stmt.bindLong(7, bookLen);
         }
  
-        String form = entity.getForm();
-        if (form != null) {
-            stmt.bindString(8, form);
+        String from = entity.getFrom();
+        if (from != null) {
+            stmt.bindString(8, from);
+        }
+ 
+        String picture = entity.getPicture();
+        if (picture != null) {
+            stmt.bindString(9, picture);
         }
     }
 
@@ -177,7 +189,8 @@ public class ShelfBookDao extends AbstractDao<ShelfBook, Long> {
             cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4), // charset
             cursor.isNull(offset + 5) ? null : cursor.getInt(offset + 5), // position
             cursor.isNull(offset + 6) ? null : cursor.getLong(offset + 6), // bookLen
-            cursor.isNull(offset + 7) ? null : cursor.getString(offset + 7) // form
+            cursor.isNull(offset + 7) ? null : cursor.getString(offset + 7), // from
+            cursor.isNull(offset + 8) ? null : cursor.getString(offset + 8) // picture
         );
         return entity;
     }
@@ -191,7 +204,8 @@ public class ShelfBookDao extends AbstractDao<ShelfBook, Long> {
         entity.setCharset(cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4));
         entity.setPosition(cursor.isNull(offset + 5) ? null : cursor.getInt(offset + 5));
         entity.setBookLen(cursor.isNull(offset + 6) ? null : cursor.getLong(offset + 6));
-        entity.setForm(cursor.isNull(offset + 7) ? null : cursor.getString(offset + 7));
+        entity.setFrom(cursor.isNull(offset + 7) ? null : cursor.getString(offset + 7));
+        entity.setPicture(cursor.isNull(offset + 8) ? null : cursor.getString(offset + 8));
      }
     
     @Override

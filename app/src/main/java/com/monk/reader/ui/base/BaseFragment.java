@@ -101,9 +101,6 @@ public abstract class BaseFragment extends Fragment {
     public void onDestroy() {
         super.onDestroy();
         Log.i(TAG, "onDestroy: ");
-        if (!mDisposable.isDisposed()) {
-            mDisposable.dispose();
-        }
     }
 
     public BaseApplication getmApplication() {

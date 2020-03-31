@@ -1,6 +1,7 @@
 package com.monk.reader.adapter;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,6 +10,10 @@ import android.widget.BaseAdapter;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.SimpleTarget;
+import com.bumptech.glide.request.target.ViewTarget;
+import com.bumptech.glide.request.transition.Transition;
 import com.monk.reader.R;
 import com.monk.reader.dao.ShelfBookDao;
 import com.monk.reader.dao.bean.ShelfBook;
@@ -32,13 +37,14 @@ public class ShelfAdapter extends BaseAdapter implements DragGridListener {
     ShelfBookDao shelfBookDao;
     @Inject
     SharedPreferencesUtils sharedPreferencesUtils;
+    private Context context;
 
     public ShelfAdapter(Context context, List<ShelfBook> shelfBookList) {
         this.shelfBookList = shelfBookList;
         inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         ((BaseActivity)context).getmApplication().getAppComponent().inject(this);
-
+        this.context = context;
         shelfCount = sharedPreferencesUtils.getInt("shelf_count",0);
     }
     @Override
@@ -75,8 +81,24 @@ public class ShelfAdapter extends BaseAdapter implements DragGridListener {
                 contentView.setVisibility(View.VISIBLE);
             }
 
-            String fileName = shelfBookList.get(position).getName();
-            viewHolder.name.setText(fileName);
+            ShelfBook shelfBook = shelfBookList.get(position);
+            String fileName = shelfBook.getName();
+            String picture = shelfBook.getPicture();
+            if("local".equals(shelfBook.getFrom())){
+                viewHolder.name.setText(fileName);
+            }else {
+                viewHolder.name.setText("");
+            }
+            if(picture ==null || "".equals(picture)){
+                viewHolder.name.setBackgroundResource(R.mipmap.cover_default_new);
+            }else {
+                Glide.with(context).load(picture).into(new SimpleTarget<Drawable>() {
+                    @Override
+                    public void onResourceReady(Drawable resource, Transition<? super Drawable> transition) {
+                        viewHolder.name.setBackground(resource);
+                    }
+                });
+            }
         }
 
         return contentView;
@@ -95,6 +117,8 @@ public class ShelfAdapter extends BaseAdapter implements DragGridListener {
     }
 
     public void addNewBook(ShelfBook newBook) {
+        if(hasInShelf(newBook)) return;
+
         newBook.setPosition(shelfCount);
         shelfBookDao.insert(newBook);
         shelfBookList.add(newBook);
@@ -103,6 +127,11 @@ public class ShelfAdapter extends BaseAdapter implements DragGridListener {
 
         setItemToFirst(newBook.getPosition());
     }
+
+    private boolean hasInShelf(ShelfBook newBook) {
+        return shelfBookList.contains(newBook);
+    }
+
     /**
      * Drag移动时item交换数据,并在数据库中更新交换后的位置数据
      *

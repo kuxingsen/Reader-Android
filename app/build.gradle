@@ -80,7 +80,7 @@ dependencies {
 }
 
 greendao {
-    schemaVersion 4//数据库版本号
+    schemaVersion 6//数据库版本号
     daoPackage 'com.monk.reader.dao'
     targetGenDir 'src/main/java'
 }

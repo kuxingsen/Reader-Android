@@ -14,7 +14,7 @@ public interface BookApi {
     Observable<Result<Book>> getBook(@Path("id") long id);
 
     @GET("book/list/new")
-    Observable<Result<Book>> getNewBookList(@Query("count") int count);
+    Observable<Result<Book>> getNewBookList(@Query("count") int count,@Query("categoryParentId") long categoryParentId);
 
     @GET("book/list/range/{id}")
     Observable<Result<Book>> getRangeBookList(@Path("id")long id,@Query("duration") String duration);
@@ -28,9 +28,6 @@ public interface BookApi {
                                                  @Query("order") String order//排序，star、up_date、download、access
     );
 
-
-    @GET("book/list/cache/{index}")
-    Observable<Result<Cache>> getBookCache(@Path("index") int index);
 
     @GET("book/list/range/{id}/week")
     Observable<Result<Book>> getRangeWeekBookList(@Path("id")long id);

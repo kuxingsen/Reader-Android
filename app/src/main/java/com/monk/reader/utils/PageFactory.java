@@ -1,5 +1,6 @@
 package com.monk.reader.utils;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
@@ -28,6 +29,10 @@ import com.monk.reader.constant.Config;
 import com.monk.reader.dao.ShelfBookDao;
 import com.monk.reader.dao.bean.BookCatalogue;
 import com.monk.reader.dao.bean.ShelfBook;
+import com.monk.reader.eventbus.InitPageEvent;
+import com.monk.reader.eventbus.InvalidateEvent;
+import com.monk.reader.eventbus.RxBus;
+import com.monk.reader.eventbus.RxEvent;
 import com.monk.reader.view.PageWidget;
 
 import java.io.IOException;
@@ -40,6 +45,8 @@ import java.util.List;
 import javax.inject.Inject;
 
 import butterknife.ButterKnife;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 
 /**
  * Created by Administrator on 2016/7/20 0020.
@@ -275,7 +282,7 @@ public class PageFactory {
         }
 
         //更新数据库进度
-        if (currentPage != null && shelfBook != null && "local".equals(shelfBook.getForm())) {
+        if (currentPage != null && shelfBook != null && "local".equals(shelfBook.getFrom())) {
             new Thread() {
                 @Override
                 public void run() {
@@ -397,6 +404,8 @@ public class PageFactory {
         }
         bookTask = new BookTask();
         bookTask.execute(shelfBook.getBegin());
+
+        registerRxBus();
     }
 
     private class BookTask extends AsyncTask<Long, Void, Boolean> {
@@ -409,14 +418,10 @@ public class PageFactory {
             if (isCancelled()) {
                 return;
             }
-            if (result) {
-                PageFactory.mStatus = PageFactory.Status.FINISH;
-//                m_mbBufLen = mBookUtil.getBookLen();
-                currentPage = getPageForBegin(begin);
-                if (mBookPageWidget != null) {
-                    currentPage(true);
-                }
-            } else {
+            if ("local".equals(shelfBook.getFrom()) &&result) {
+                Log.i(TAG, "onPostExecute: local");
+                startPage(begin);
+            } else if(!result){
                 PageFactory.mStatus = PageFactory.Status.FAIL;
                 drawStatus(mBookPageWidget.getCurPage());
                 drawStatus(mBookPageWidget.getNextPage());
@@ -449,6 +454,39 @@ public class PageFactory {
 
     }
 
+    private void startPage(long begin) {
+        PageFactory.mStatus = PageFactory.Status.FINISH;
+//                m_mbBufLen = mBookUtil.getBookLen();
+        currentPage = getPageForBegin(begin);
+        if (mBookPageWidget != null) {
+            currentPage(true);
+        }
+    }
+
+
+    @SuppressLint("CheckResult")
+    private void registerRxBus() {
+        RxBus.getDefault().toObservable(RxEvent.class)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(rxEvent -> {
+                    if (rxEvent != null) {
+                        onEventMainThread(rxEvent);
+                    }
+                });
+    }
+
+    protected void onEventMainThread(RxEvent rxEvent) {
+        if(rxEvent instanceof InitPageEvent)
+        {
+            startPage(shelfBook.getBegin());
+        }
+        if(rxEvent instanceof InvalidateEvent)
+        {
+            startPage(((InvalidateEvent) rxEvent).getBegin());
+        }
+    }
+
     public TRPage getNextPage() {
         mBookUtil.setPostition(currentPage.getEnd());
 
@@ -474,12 +512,15 @@ public class PageFactory {
     }
 
     public TRPage getPageForBegin(long begin) {
+        Log.i(TAG, "onPostExecute: 666");
         TRPage trPage = new TRPage();
         trPage.setBegin(begin);
 
         mBookUtil.setPostition(begin - 1);
 
+        Log.i(TAG, "onPostExecute: 777");
         trPage.setLines(getNextLines());
+        Log.i(TAG, "onPostExecute: 888");
         trPage.setEnd(mBookUtil.getPosition());
         return trPage;
     }
@@ -490,9 +531,12 @@ public class PageFactory {
         float height = 0;
         String line = "";
         while (mBookUtil.next(true) != -1) {
+            Log.i(TAG, "getNextLines: 111");
             char word = (char) mBookUtil.next(false);
+            Log.i(TAG, "getNextLines: 222");
             //判断是否换行
             if ((word + "").equals("\r") && (((char) mBookUtil.next(true)) + "").equals("\n")) {
+                Log.i(TAG, "getNextLines: 333");
                 mBookUtil.next(false);
                 if (!line.isEmpty()) {
                     lines.add(line);
@@ -504,6 +548,7 @@ public class PageFactory {
                     }
                 }
             } else {
+                Log.i(TAG, "getNextLines: 444");
                 float widthChar = mPaint.measureText(word + "");
                 width += widthChar;
                 if (width > mVisibleWidth) {
@@ -515,6 +560,7 @@ public class PageFactory {
                 }
             }
 
+            Log.i(TAG, "getNextLines: 555");
             if (lines.size() == mLineCount) {
                 if (!line.isEmpty()) {
                     mBookUtil.setPostition(mBookUtil.getPosition() - 1);
@@ -523,6 +569,7 @@ public class PageFactory {
             }
         }
 
+        Log.i(TAG, "getNextLines: 666");
         if (!line.isEmpty() && lines.size() < mLineCount) {
             lines.add(line);
         }
@@ -641,25 +688,6 @@ public class PageFactory {
         onDraw(mBookPageWidget.getNextPage(), currentPage.getLines(), updateChapter);
     }
 
-    //更新电量
-    public void updateBattery(int mLevel) {
-        if (currentPage != null && mBookPageWidget != null && !mBookPageWidget.isRunning()) {
-            if (level != mLevel) {
-                level = mLevel;
-                currentPage(false);
-            }
-        }
-    }
-
-    public void updateTime() {
-        if (currentPage != null && mBookPageWidget != null && !mBookPageWidget.isRunning()) {
-            String mDate = sdf.format(new java.util.Date());
-            if (date != mDate) {
-                date = mDate;
-                currentPage(false);
-            }
-        }
-    }
 
     //改变进度
     public void changeProgress(float progress) {

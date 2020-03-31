@@ -170,10 +170,11 @@ public class ReaderActivity extends BaseActivity {
                         shelfBook.setBegin(begin);
                         shelfBook.setName(book.getName());
                         shelfBook.setId(bookId);//todo
-                        shelfBook.setForm("network");
+                        shelfBook.setFrom("network");
                         shelfBook.setPath(bookId+"");
                         shelfBook.setCharset(book.getCharSet());
                         shelfBook.setBookLen(book.getSize());
+                        Log.i(TAG, "initData: "+shelfBook);
 
                         try {
                             pageFactory.openBook(shelfBook);

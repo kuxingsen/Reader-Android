@@ -43,7 +43,7 @@ public class FragmentController {
         lists.add(new HomeFragment());
         BookcaseFragment bookcaseFragment = new BookcaseFragment();
         Bundle arguments = new Bundle();
-        arguments.putLong("selectId",4);//todo 通过shareprefrence
+        arguments.putLong("selectId",0);
         bookcaseFragment.setArguments(arguments);
         lists.add(bookcaseFragment);
         lists.add(new DemoFragment());

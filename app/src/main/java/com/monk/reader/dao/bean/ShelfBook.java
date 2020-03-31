@@ -24,7 +24,10 @@ public class ShelfBook implements Serializable {
     private String charset;
     private Integer position;
     private Long bookLen;
-    private String form;
+    private String from;
+    private String picture;
+
+
     @ToMany(referencedJoinProperty = "bookId")
     private List<BookCatalogue> bookCatalogueList;
     /** Used to resolve relations */
@@ -33,9 +36,9 @@ public class ShelfBook implements Serializable {
     /** Used for active entity operations. */
     @Generated(hash = 1373704499)
     private transient ShelfBookDao myDao;
-    @Generated(hash = 2022019811)
-    public ShelfBook(Long id, String name, String path, Long begin, String charset, Integer position,
-            Long bookLen, String form) {
+    @Generated(hash = 1132579919)
+    public ShelfBook(Long id, String name, String path, Long begin, String charset,
+            Integer position, Long bookLen, String from, String picture) {
         this.id = id;
         this.name = name;
         this.path = path;
@@ -43,19 +46,29 @@ public class ShelfBook implements Serializable {
         this.charset = charset;
         this.position = position;
         this.bookLen = bookLen;
-        this.form = form;
+        this.from = from;
+        this.picture = picture;
     }
 
     @Generated(hash = 937254149)
     public ShelfBook() {
     }
+    /** Used to resolve relations */
 
-    public String getForm() {
-        return form;
+    public String getPicture() {
+        return picture;
     }
 
-    public void setForm(String form) {
-        this.form = form;
+    public void setPicture(String picture) {
+        this.picture = picture;
+    }
+
+    public String getFrom() {
+        return from;
+    }
+
+    public void setFrom(String from) {
+        this.from = from;
     }
 
     @Override
@@ -68,7 +81,8 @@ public class ShelfBook implements Serializable {
                 ", charset='" + charset + '\'' +
                 ", position=" + position +
                 ", bookLen=" + bookLen +
-                ", form='" + form + '\'' +
+                ", from='" + from + '\'' +
+                ", picture='" + picture + '\'' +
                 '}';
     }
 
@@ -199,6 +213,7 @@ public class ShelfBook implements Serializable {
         this.daoSession = daoSession;
         myDao = daoSession != null ? daoSession.getShelfBookDao() : null;
     }
+
 }
 
 

@@ -43,7 +43,8 @@ public class CatalogueAdapter extends RecyclerView.Adapter<CatalogueAdapter.View
             //todo 完善
             Bundle bundle = new Bundle();
             bundle.putLong("bookId", catalogue.getBookId());
-            bundle.putLong("start", catalogue.getBookCatalogueStartPos());
+            bundle.putLong("begin", catalogue.getBookCatalogueStartPos());
+            bundle.putString("from","network");
             ARouter.getInstance().build("/activity/reader").with(bundle).navigation();
         });
     }

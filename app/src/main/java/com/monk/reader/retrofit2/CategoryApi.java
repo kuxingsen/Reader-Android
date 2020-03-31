@@ -11,7 +11,7 @@ import retrofit2.http.GET;
 import retrofit2.http.Path;
 
 public interface CategoryApi {
-    @GET("category/{id}")
+    @GET("category/sub/{id}")
     Observable<Result<Category>> getSubCategoryById(@Path("id") long id);
 
 }

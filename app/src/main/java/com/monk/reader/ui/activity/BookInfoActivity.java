@@ -77,8 +77,6 @@ public class BookInfoActivity extends BaseActivity {
     @BindView(R.id.tool_bar)
     Toolbar toolBar;
 
-    private StoryArticle mStoryArticle;
-    private int mDownloadState;
     @Inject
     ShelfBookDao shelfBookDao;
     @Inject
@@ -176,18 +174,21 @@ public class BookInfoActivity extends BaseActivity {
 
                 break;
         }
+
     }
 
     @OnClick(R.id.info_add_to_shelf_tv)
     public void info_add_to_shelf_tv_click(View view) {
         ShelfBook shelfBook = new ShelfBook();
         shelfBook.setPath(bookId+"");
-        shelfBook.setForm("network");
+        shelfBook.setFrom("network");
         shelfBook.setBookLen(bookSize);
         shelfBook.setCharset(bookCharSet);
         shelfBook.setName(bookName);
         shelfBook.setBegin(0L);//todo
+        shelfBook.setPicture(bookPicture);
         RxBus.getDefault().post(new AddToShelfEvent(shelfBook));
+        Log.i(TAG, "info_add_to_shelf_tv_click: "+shelfBook);
         info_add_to_shelf_tv.setEnabled(false);
         info_add_to_shelf_tv.setText("已加入书架");
     }

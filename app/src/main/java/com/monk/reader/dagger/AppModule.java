@@ -74,7 +74,9 @@ public class AppModule {
     @Named("retrofit")
     @Provides
     public Retrofit getRetrofit(){
-        return new Retrofit.Builder().baseUrl("https://www.fastmock.site/mock/585d70a5d2130ab1fbcf2b7b65fc7b37/test/")
+        return new Retrofit.Builder()
+//                .baseUrl("https://www.fastmock.site/mock/585d70a5d2130ab1fbcf2b7b65fc7b37/test/")
+                .baseUrl("http://192.168.43.14:8080/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .build();

@@ -112,26 +112,31 @@ public class HomeFragment extends BaseFragment {
 
                     final ShelfBook shelfBook = HomeFragment.this.shelfBookList.get(0);
                     final String path = shelfBook.getPath();
-                    File file = new File(path);
-                    if (!file.exists()) {
-                        new AlertDialog.Builder(mActivity)
-                                .setTitle(mActivity.getString(R.string.app_name))
-                                .setMessage(path + "文件不存在,是否删除该书本？")
-                                .setPositiveButton("删除", (dialog, which) -> adapter.removeItem(0))
-                                .setCancelable(true)
-                                .show();
-                        return;
-                    }
+                    String from = shelfBook.getFrom();
                     Log.i(TAG, "onItemClick: " + shelfBook);
-
-                    mActivity.overridePendingTransition(R.anim.in_from_right, R.anim.out_to_left);
                     Bundle bundle = new Bundle();
-                    bundle.putLong(ReaderActivity.EXTRA_BOOK_ID, shelfBook.getId());
-                    bundle.putString("from", "local");
+                    if("local".equals(from)){
+                        File file = new File(path);
+                        if (!file.exists()) {
+                            new AlertDialog.Builder(mActivity)
+                                    .setTitle(mActivity.getString(R.string.app_name))
+                                    .setMessage(path + "文件不存在,是否删除该书本？")
+                                    .setPositiveButton("删除", (dialog, which) -> adapter.removeItem(0))
+                                    .setCancelable(true)
+                                    .show();
+                            return;
+                        }
+                        bundle.putLong(ReaderActivity.EXTRA_BOOK_ID, shelfBook.getId());
+                        bundle.putString("from", "local");
+                    }else {
+                        bundle.putLong(ReaderActivity.EXTRA_BOOK_ID, Long.valueOf(shelfBook.getPath()));
+                        bundle.putString("from", "network");
+                        bundle.putLong("begin",shelfBook.getBegin());
+                    }
+                    mActivity.overridePendingTransition(R.anim.in_from_right, R.anim.out_to_left);
                     ARouter.getInstance().build("/activity/reader")
                             .with(bundle)
                             .navigation();
-
                 }
             }
         });
@@ -149,8 +154,10 @@ public class HomeFragment extends BaseFragment {
     @Override
     protected void onEventMainThread(RxEvent rxEvent) {
         super.onEventMainThread(rxEvent);
+        Log.i(TAG, "onEventMainThread: ???");
         if (rxEvent instanceof AddToShelfEvent) {
             ShelfBook newBook = ((AddToShelfEvent) rxEvent).getNewBook();
+            Log.i(TAG, "onEventMainThread: newbook"+newBook);
             adapter.addNewBook(newBook);
         }
         if (rxEvent instanceof HideShelfDeleteButton) {
