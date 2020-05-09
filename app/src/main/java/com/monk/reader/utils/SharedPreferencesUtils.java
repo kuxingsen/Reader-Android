@@ -16,9 +16,6 @@ import java.util.Set;
 
 import static android.content.Context.MODE_PRIVATE;
 
-/**
- * Created by lfh on 2016/8/13.
- */
 public class SharedPreferencesUtils {
 
     private static SharedPreferencesUtils prefsUtil;

@@ -46,7 +46,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
 //        if (showRangeContentListener != null)
 //            showRangeContentListener.showRange(holder.tvRange, book);
 //        else holder.tvRange.setText("");
-        Glide.with(holder.itemView.getContext()).load(book.getPicture()).into(holder.ivPicture);
+        Glide.with(holder.itemView.getContext()).load("http://192.168.43.14:8080"+book.getPicture().replaceAll("\\\\","/")).into(holder.ivPicture);
         holder.itemView.setOnClickListener(v->{
             Bundle bundle = new Bundle();
             bundle.putLong("bookId", book.getId());

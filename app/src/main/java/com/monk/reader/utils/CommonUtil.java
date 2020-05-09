@@ -12,9 +12,6 @@ import android.view.WindowManager;
 
 import java.lang.reflect.Method;
 
-/**
- * Created by CAIYAO on 2017/9/6.
- */
 
 public class CommonUtil {
 

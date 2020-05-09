@@ -21,10 +21,12 @@ import com.alibaba.android.arouter.launcher.ARouter;
 import com.bumptech.glide.Glide;
 import com.monk.reader.R;
 import com.monk.reader.adapter.CatalogueAdapter;
+import com.monk.reader.dao.DownloadInfoDao;
 import com.monk.reader.dao.ShelfBookDao;
 import com.monk.reader.dao.bean.BookCatalogue;
 import com.monk.reader.dao.bean.ShelfBook;
-import com.monk.reader.dao.model.StoryArticle;
+import com.monk.reader.download.DownloadInfo;
+import com.monk.reader.download.DownloadManager;
 import com.monk.reader.eventbus.AddToShelfEvent;
 import com.monk.reader.eventbus.RxBus;
 import com.monk.reader.retrofit2.BookApi;
@@ -32,6 +34,8 @@ import com.monk.reader.retrofit2.BookCatalogueApi;
 import com.monk.reader.retrofit2.bean.Book;
 import com.monk.reader.ui.base.BaseActivity;
 import com.monk.reader.utils.BookUtil;
+
+import org.greenrobot.greendao.query.WhereCondition;
 
 import java.util.List;
 
@@ -43,9 +47,6 @@ import butterknife.OnClick;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
-/**
- * Created by heyao on 2017/8/1.
- */
 @Route(path = "/activity/info")
 public class BookInfoActivity extends BaseActivity {
     private static final String TAG = "BookInfoActivity";
@@ -90,6 +91,13 @@ public class BookInfoActivity extends BaseActivity {
     private String bookPicture;
     private long bookSize;
     private String bookCharSet;
+    private Long begin=0L;
+    private boolean inShelf=false;
+    private String bookAuthor;
+    private int mDownloadState;
+    private String bookPath;
+    private String categoryName;
+    private CatalogueAdapter catalogueAdapter;
 
     @Override
     protected int inflateLayout() {
@@ -109,9 +117,11 @@ public class BookInfoActivity extends BaseActivity {
     protected void initAfter() {
         super.initAfter();
 
+        toolBar.setTitle("");
         setSupportActionBar(toolBar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
+        isInShelf();
+        hasDownload();
         bookApi.getBook(bookId)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -121,25 +131,25 @@ public class BookInfoActivity extends BaseActivity {
                     if (data == null || data.size() == 0) return;
                     Book book = data.get(0);
                     bookName = book.getName();
-                    bookPicture = book.getPicture();
+                    bookPicture = book.getPicture().replaceAll("\\\\","/");
                     bookSize = book.getSize();
                     bookCharSet = book.getCharSet();
-                    String author = book.getAuthor();
+                    bookAuthor = book.getAuthor();
+                    bookPath = book.getPath();
                     String introduction = book.getIntroduction();
                     String upDate = book.getUpDate();
-                    int length = book.getLength();
-                    String categoryName = book.getCategoryName();
+                    categoryName = book.getCategoryName();
 
                     tvTitle.setText(bookName);
                     tvName.setText(bookName);
-                    SpannableString authorString = new SpannableString(author + " 著");
+                    SpannableString authorString = new SpannableString(bookAuthor + " 著");
                     authorString.setSpan(new ForegroundColorSpan(Color.parseColor("#ee3f3f")), 0, authorString.length() - 1,
                             Spanned.SPAN_INCLUSIVE_INCLUSIVE);
                     tvAuthor.setText(authorString);
                     tvIntro.setText(introduction);
-                    tvLength.setText(length+" 万字");
+                    tvLength.setText(bookSize+" 字");
                     tvCategory.setText(categoryName);
-                    Glide.with(this).load(bookPicture).into(ivPicture);
+                    Glide.with(this).load("http://192.168.43.14:8080"+bookPicture).into(ivPicture);
                     tvUpDate.setText("上传于 " + upDate);
 
                 }, Throwable::printStackTrace);
@@ -151,12 +161,40 @@ public class BookInfoActivity extends BaseActivity {
                 .subscribe(result -> {
                     Log.i(TAG, "initAfter: " + result);
                     List<BookCatalogue> data = result.getData();
-                    CatalogueAdapter catalogueAdapter = new CatalogueAdapter(data);
+                    catalogueAdapter = new CatalogueAdapter(data,inShelf);
                     rvShowCatalogue.setLayoutManager(new LinearLayoutManager(this));
                     rvShowCatalogue.setAdapter(catalogueAdapter);
 
                 }, Throwable::printStackTrace);
   }
+
+    private void hasDownload() {
+
+        List<DownloadInfo> infos = DownloadInfo.DAO.queryBuilder().where(DownloadInfoDao.Properties.BookId.eq(bookId)).list();
+        if (infos != null && infos.size() > 0) {
+            DownloadInfo info = infos.get(0);
+            mDownloadState = info.getState();
+            if (mDownloadState == DownloadInfo.FINISH) {
+                tv_book_info_download.setText("已下载");
+            } else if (mDownloadState == DownloadInfo.DOWNLOADING || mDownloadState == DownloadInfo.WAITING) {
+                tv_book_info_download.setText("下载中...");
+            } else {
+                tv_book_info_download.setText("下载");
+            }
+        } else {
+            tv_book_info_download.setText("下载");
+        }
+    }
+
+    private void isInShelf() {
+        List<ShelfBook> queryRaw = shelfBookDao.queryRaw("where path=?", "" + bookId);
+        if(null != queryRaw && 0<queryRaw.size()){
+            info_add_to_shelf_tv.setEnabled(false);
+            info_add_to_shelf_tv.setText("已加入书架");
+            begin = queryRaw.get(0).getBegin();
+            inShelf = true;
+        }
+    }
 
 
     @OnClick(R.id.tv_start_read)
@@ -168,6 +206,8 @@ public class BookInfoActivity extends BaseActivity {
                 Bundle bundle = new Bundle();
                 bundle.putLong(ReaderActivity.EXTRA_BOOK_ID, bookId);
                 bundle.putString("from", "network");
+                bundle.putLong("begin",begin);
+                bundle.putBoolean("inShelf",inShelf);
                 ARouter.getInstance().build("/activity/reader")
                         .with(bundle)
                         .navigation();
@@ -179,6 +219,7 @@ public class BookInfoActivity extends BaseActivity {
 
     @OnClick(R.id.info_add_to_shelf_tv)
     public void info_add_to_shelf_tv_click(View view) {
+        inShelf = true;
         ShelfBook shelfBook = new ShelfBook();
         shelfBook.setPath(bookId+"");
         shelfBook.setFrom("network");
@@ -191,22 +232,24 @@ public class BookInfoActivity extends BaseActivity {
         Log.i(TAG, "info_add_to_shelf_tv_click: "+shelfBook);
         info_add_to_shelf_tv.setEnabled(false);
         info_add_to_shelf_tv.setText("已加入书架");
+        inShelf = true;
+        catalogueAdapter.setInShelf(inShelf);
     }
-/*
+
     @OnClick(R.id.tv_book_info_download)
     public void tv_book_info_download_click(View v) {
-        if (mStoryArticle == null) return;
         if (mDownloadState == DownloadInfo.FINISH
                 || mDownloadState == DownloadInfo.DOWNLOADING
                 || mDownloadState == DownloadInfo.WAITING)
             return;
         DownloadInfo book = new DownloadInfo();
-        book.setBookId(mStoryArticle.getId());
-        book.setName(mStoryArticle.getArtName());
-        book.setAuthor(mStoryArticle.getArtAuth());
-        book.setStatus(mStoryArticle.getArtStat());
-        book.setUrl("http://down.hunhun520.com/18/18109.txt");
+        book.setBookId(""+bookId);
+        book.setName(bookName);
+        book.setAuthor(bookAuthor);
+        book.setPicture(bookPicture);
+        book.setCategory(categoryName);
+        book.setUrl("http://192.168.43.14:8080/file"+bookPath);
         DownloadManager.download(book);
         tv_book_info_download.setText("下载中...");
-    }*/
+    }
 }

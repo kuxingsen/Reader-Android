@@ -6,9 +6,6 @@ import android.graphics.Typeface;
 
 import com.monk.reader.R;
 
-/**
- * Created by CAIYAO on 2017/9/6.
- */
 
 public class Config {
     private final static String SP_NAME = "config";

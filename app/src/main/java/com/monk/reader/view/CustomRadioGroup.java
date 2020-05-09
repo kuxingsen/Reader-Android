@@ -10,10 +10,6 @@ import android.widget.RadioGroup;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by Dengxiao on 2016/12/2.
- */
-
 public class CustomRadioGroup extends RadioGroup {
 
     private List<RowView> rowViews;//存放每行radioBotton的集合

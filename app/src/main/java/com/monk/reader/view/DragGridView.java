@@ -161,14 +161,14 @@ public class DragGridView extends GridView implements View.OnClickListener {
         @Override
         public void run() {
             isDrag = true; //设置可以拖拽
-            mVibrator.vibrate(50); //震动一下
-            mStartDragItemView.setVisibility(View.INVISIBLE);//隐藏该item
-
+            //震动一下
+            mVibrator.vibrate(50);
+            //隐藏正在拖拽的书籍
+            mStartDragItemView.setVisibility(View.INVISIBLE);
             //根据我们按下的点显示item镜像
             createDragImage(mDragBitmap, mDownX, mDownY);
-
+            //设置展示删除按钮
             setIsShowDeleteButton(true);
-
 
         }
     };

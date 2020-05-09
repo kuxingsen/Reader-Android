@@ -5,9 +5,6 @@ import android.graphics.Canvas;
 import android.graphics.PointF;
 import android.widget.Scroller;
 
-/**
- * Created by Administrator on 2016/8/1 0001.
- */
 public abstract class AnimationProvider {
 //    static enum Mode {
 //        NoScrolling(false),

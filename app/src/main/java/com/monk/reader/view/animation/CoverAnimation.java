@@ -7,9 +7,6 @@ import android.graphics.drawable.GradientDrawable;
 import android.util.Log;
 import android.widget.Scroller;
 
-/**
- * Created by Administrator on 2016/8/30 0030.
- */
 public class CoverAnimation extends AnimationProvider {
 
     private Rect mSrcRect, mDestRect;

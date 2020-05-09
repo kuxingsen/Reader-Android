@@ -94,4 +94,20 @@
         <item name="android:textColor">#70ffffff</item>
         <item name="android:textSize">12sp</item>
     </style>
+
+    <style name="textContentStyle">
+        <item name="android:textColor">@color/grey_font2</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <style name="tabLayoutStyle">
+        <item name="android:textAppearance">@style/tabTextAppearance</item>
+    </style>
+
+    <style name="tabTextAppearance" parent="TextAppearance.Design.Tab">
+        <item name="textAllCaps">false</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/grey_font2</item>
+    </style>
 </resources>

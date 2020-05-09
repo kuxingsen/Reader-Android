@@ -22,9 +22,11 @@ import butterknife.ButterKnife;
 
 public class CatalogueAdapter extends RecyclerView.Adapter<CatalogueAdapter.ViewHolder> {
     private List<BookCatalogue> bookCatalogueList;
+    private boolean inShelf;
 
-    public CatalogueAdapter(List<BookCatalogue> bookCatalogueList) {
+    public CatalogueAdapter(List<BookCatalogue> bookCatalogueList,boolean inShelf) {
         this.bookCatalogueList = bookCatalogueList;
+        this.inShelf = inShelf;
     }
 
     @NonNull
@@ -45,6 +47,7 @@ public class CatalogueAdapter extends RecyclerView.Adapter<CatalogueAdapter.View
             bundle.putLong("bookId", catalogue.getBookId());
             bundle.putLong("begin", catalogue.getBookCatalogueStartPos());
             bundle.putString("from","network");
+            bundle.putBoolean("inShelf",inShelf);
             ARouter.getInstance().build("/activity/reader").with(bundle).navigation();
         });
     }
@@ -52,6 +55,10 @@ public class CatalogueAdapter extends RecyclerView.Adapter<CatalogueAdapter.View
     @Override
     public int getItemCount() {
         return bookCatalogueList == null ? 0 : bookCatalogueList.size();
+    }
+
+    public void setInShelf(boolean inShelf) {
+        this.inShelf = inShelf;
     }
 
 

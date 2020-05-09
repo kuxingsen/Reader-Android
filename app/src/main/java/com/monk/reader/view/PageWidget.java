@@ -30,9 +30,6 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
 
-/**
- * Created by Administrator on 2016/8/29 0029.
- */
 public class PageWidget extends View {
     private final static String TAG = "BookPageWidget";
     private int mScreenWidth = 0; // 屏幕宽

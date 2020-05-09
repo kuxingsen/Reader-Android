@@ -3,10 +3,6 @@ package com.monk.reader.eventbus;
 import io.reactivex.Observable;
 import io.reactivex.subjects.PublishSubject;
 
-/**
- * Created by Qiao on 2017/2/3.
- */
-
 public class RxBus {
     private static volatile RxBus defaultInstance;
 

@@ -23,9 +23,7 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
 
-/**
- * Created by heyao on 2017/7/17.
- */
+
 
 public abstract class BaseActivity extends AppCompatActivity{
     private static final String TAG = "BaseActivity";
@@ -113,6 +111,7 @@ public abstract class BaseActivity extends AppCompatActivity{
         if (!mDisposable.isDisposed()) {
             mDisposable.dispose();
         }
+        appManager.finishActivity();
     }
 
     public BaseApplication getmApplication() {

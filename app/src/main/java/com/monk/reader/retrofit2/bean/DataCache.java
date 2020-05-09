@@ -2,9 +2,6 @@ package com.monk.reader.retrofit2.bean;
 
 import java.lang.ref.WeakReference;
 
-/**
- * Created by Administrator on 2016/8/15 0015.
- */
 public class DataCache {
     private long size;
     private String data;

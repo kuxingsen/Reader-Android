@@ -25,9 +25,6 @@ import io.reactivex.schedulers.Schedulers;
 
 import static androidx.fragment.app.FragmentPagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT;
 
-/**
- * Created by CAIYAO on 2017/7/24.
- */
 
 public class BookcaseFragment extends BaseFragment {
     private static final String TAG = "BookcaseFragment";

@@ -12,9 +12,6 @@ import android.graphics.Region;
 import android.graphics.drawable.GradientDrawable;
 import android.widget.Scroller;
 
-/**
- * Created by Administrator on 2016/8/26 0026.
- */
 public class SimulationAnimation extends AnimationProvider {
     /**
      *左  mCornerX = 0;

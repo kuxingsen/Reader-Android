@@ -4,14 +4,17 @@ import android.content.Context;
 
 import com.alibaba.android.arouter.launcher.ARouter;
 import com.monk.reader.AppManager;
+import com.monk.reader.BaseApplication;
 import com.monk.reader.adapter.RangeAdapter;
 import com.monk.reader.adapter.ShelfAdapter;
 import com.monk.reader.dao.DaoSession;
 import com.monk.reader.dao.ShelfBookDao;
+import com.monk.reader.download.DownloadTask;
 import com.monk.reader.retrofit2.CategoryApi;
 import com.monk.reader.retrofit2.UserApi;
 import com.monk.reader.ui.activity.BookInfoActivity;
 import com.monk.reader.ui.activity.FileChooserActivity;
+import com.monk.reader.ui.activity.HistoryActivity;
 import com.monk.reader.ui.activity.MainActivity;
 import com.monk.reader.ui.activity.ReaderActivity;
 import com.monk.reader.ui.activity.SearchActivity;
@@ -35,6 +38,7 @@ import retrofit2.Retrofit;
 @Singleton
 @Component(modules = AppModule.class)
 public interface AppComponent {
+    void inject(BaseApplication baseApplication);
 
     void inject(BaseActivity baseActivity);
     void inject(MainActivity mainActivity);
@@ -42,6 +46,7 @@ public interface AppComponent {
     void inject(ReaderActivity readerActivity);
     void inject(SearchActivity searchActivity);
     void inject(BookInfoActivity bookInfoActivity);
+    void inject(HistoryActivity historyActivity);
 
     void inject(ShelfAdapter shelfAdapter);
 
@@ -55,4 +60,6 @@ public interface AppComponent {
 
     void inject(PageFactory pageFactory);
     void inject(BookUtil bookUtil);
+
+    void inject(DownloadTask downloadTask);
 }

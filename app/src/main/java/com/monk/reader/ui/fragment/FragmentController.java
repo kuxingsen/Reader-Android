@@ -12,9 +12,6 @@ import com.monk.reader.ui.base.BaseFragment;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by heyao on 2017/7/24.
- */
 
 public class FragmentController {
     private static final String TAG = "FragmentController";
@@ -46,14 +43,13 @@ public class FragmentController {
         arguments.putLong("selectId",0);
         bookcaseFragment.setArguments(arguments);
         lists.add(bookcaseFragment);
-        lists.add(new DemoFragment());
-//        lists.add(new MyselfFragment());
+//        lists.add(new DemoFragment());
+        lists.add(new MyselfFragment());
 
     }
 
     public void showFragment(int position) {
         Log.i(TAG, "showFragment: "+position);
-        BaseFragment oldFragment = lists.get(mPosition);
         mPosition = position;
         BaseFragment baseFragment = lists.get(position);
         mManager.beginTransaction()

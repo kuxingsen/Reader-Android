@@ -6,9 +6,6 @@ import android.graphics.Rect;
 import android.util.Log;
 import android.widget.Scroller;
 
-/**
- * Created by Administrator on 2016/8/29 0029.
- */
 public class SlideAnimation extends AnimationProvider {
     private Rect mSrcRect, mDestRect, mNextSrcRect, mNextDestRect;
 

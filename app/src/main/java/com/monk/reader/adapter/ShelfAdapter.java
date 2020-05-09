@@ -92,7 +92,7 @@ public class ShelfAdapter extends BaseAdapter implements DragGridListener {
             if(picture ==null || "".equals(picture)){
                 viewHolder.name.setBackgroundResource(R.mipmap.cover_default_new);
             }else {
-                Glide.with(context).load(picture).into(new SimpleTarget<Drawable>() {
+                Glide.with(context).load("http://192.168.43.14:8080"+picture.replaceAll("\\\\","/")).into(new SimpleTarget<Drawable>() {
                     @Override
                     public void onResourceReady(Drawable resource, Transition<? super Drawable> transition) {
                         viewHolder.name.setBackground(resource);
@@ -129,7 +129,7 @@ public class ShelfAdapter extends BaseAdapter implements DragGridListener {
     }
 
     private boolean hasInShelf(ShelfBook newBook) {
-        return shelfBookList.contains(newBook);
+        return  newBook.getId()!= null|| shelfBookList.contains(newBook);
     }
 
     /**

@@ -30,13 +30,7 @@
             android:background="@drawable/common_button"
             android:transitionName="simple_search_name"
             app:layout_constraintTop_toBottomOf="@id/view_pager_banner"/>
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/search_button"
-            app:layout_constraintStart_toEndOf="@id/sv_search"
-            app:layout_constraintTop_toTopOf="@id/sv_search"
-            />
+
     <!--    分类-->
 <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_show_category"
@@ -58,13 +52,6 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toBottomOf="@id/rv_show_category"
         />
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@drawable/common_button"
-        android:text="更多"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/tv_new"/>
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_show_new"
         android:layout_width="match_parent"
@@ -95,17 +82,17 @@
         android:textSize="20sp"
         android:textStyle="bold"
         android:text="@string/app_name"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tv_range"/>
         />
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tl_range"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@+id/tv_range"/>
+        app:layout_constraintTop_toBottomOf="@+id/tv_range_name"/>
     <androidx.viewpager.widget.ViewPager
         android:id="@+id/vp_range"
         android:layout_width="match_parent"
-        android:layout_height="1100dp"
+        android:layout_height="1150dp"
         app:layout_constraintTop_toBottomOf="@id/tl_range"/>
 </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

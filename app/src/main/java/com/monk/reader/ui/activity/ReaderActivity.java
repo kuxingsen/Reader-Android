@@ -29,9 +29,12 @@ import com.monk.reader.R;
 import com.monk.reader.constant.Config;
 import com.monk.reader.dagger.DaggerAppComponent;
 import com.monk.reader.dao.ShelfBookDao;
+import com.monk.reader.dao.bean.ReadInfo;
 import com.monk.reader.dao.bean.ShelfBook;
 import com.monk.reader.dialog.PageModeDialog;
 import com.monk.reader.dialog.SettingDialog;
+import com.monk.reader.eventbus.ReadBookEvent;
+import com.monk.reader.eventbus.RxBus;
 import com.monk.reader.retrofit2.BookApi;
 import com.monk.reader.retrofit2.BookCatalogueApi;
 import com.monk.reader.retrofit2.bean.Book;
@@ -89,12 +92,15 @@ public class ReaderActivity extends BaseActivity {
     @Inject
     public BookCatalogueApi bookCatalogueApi;
 
+
     @Autowired(name = EXTRA_BOOK_ID)
     public long bookId;
     @Autowired(name = "from")
     public String from="local";
     @Autowired(name = "begin")
     public long begin=0L;
+    @Autowired(name = "inShelf")
+    public boolean inShelf=false;
 
 
     private SettingDialog mSettingDialog;
@@ -105,12 +111,16 @@ public class ReaderActivity extends BaseActivity {
     private Boolean isShow = false;
 
     private Boolean mDayOrNight;
+    private ShelfBook shelfBook;
+
+    private long startTime;
 
     @Override
     protected void initBefore() {
         super.initBefore();
         getmApplication().getAppComponent().inject(this);
         ARouter.getInstance().inject(this);
+        startTime = System.currentTimeMillis();
     }
     @Override
     public int inflateLayout() {
@@ -148,7 +158,7 @@ public class ReaderActivity extends BaseActivity {
         pageFactory.setPageWidget(bookPage);
 
         if ("local".equals(from)) {
-            ShelfBook shelfBook = shelfBookDao.load(bookId);
+            shelfBook = shelfBookDao.load(bookId);
 
             try {
                 pageFactory.openBook(shelfBook);
@@ -158,32 +168,50 @@ public class ReaderActivity extends BaseActivity {
             }
         }
         if("network".equals(from)){
-            bookApi.getBook(bookId)
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(result -> {
-                        Log.i(TAG, "initAfter: " + result);
-                        List<Book> bookList = result.getData();
-                        if(bookList == null || bookList.size() == 0) return;
-                        Book book = bookList.get(0);
-                        ShelfBook shelfBook = new ShelfBook();
-                        shelfBook.setBegin(begin);
-                        shelfBook.setName(book.getName());
-                        shelfBook.setId(bookId);//todo
-                        shelfBook.setFrom("network");
-                        shelfBook.setPath(bookId+"");
-                        shelfBook.setCharset(book.getCharSet());
-                        shelfBook.setBookLen(book.getSize());
-                        Log.i(TAG, "initData: "+shelfBook);
 
-                        try {
-                            pageFactory.openBook(shelfBook);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            Toast.makeText(this, "打开电子书失败", Toast.LENGTH_SHORT).show();
-                        }
+            if(inShelf){
+                List<ShelfBook> list = shelfBookDao.queryRaw("where path=?",""+bookId);
+                if(list != null && list.size()>0){
+                    Log.i(TAG, "initData: 在书架上的网络书");
+                    shelfBook = list.get(0);
+                    if(begin != 0L) shelfBook.setBegin(begin);
+                    try {
+                        pageFactory.openBook(shelfBook);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        Toast.makeText(this, "打开电子书失败", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+            else {
+                bookApi.getBook(bookId)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(result -> {
+                            Log.i(TAG, "initAfter: " + result);
+                            List<Book> bookList = result.getData();
+                            if (bookList == null || bookList.size() == 0) return;
+                            Book book = bookList.get(0);
+                            shelfBook = new ShelfBook();
+                            shelfBook.setBegin(begin);
+                            shelfBook.setName(book.getName());
+                            shelfBook.setFrom("network");
+                            shelfBook.setPath(bookId + "");
+                            shelfBook.setCharset(book.getCharSet());
+                            shelfBook.setBookLen(book.getSize());
+                            shelfBook.setPicture(book.getPicture());
 
-                    }, Throwable::printStackTrace);
+                            Log.i(TAG, "initData: " + shelfBook);
+
+                            try {
+                                pageFactory.openBook(shelfBook);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                                Toast.makeText(this, "打开电子书失败", Toast.LENGTH_SHORT).show();
+                            }
+
+                        }, Throwable::printStackTrace);
+            }
         }
         initDayOrNight();
 
@@ -280,6 +308,7 @@ public class ReaderActivity extends BaseActivity {
             @Override
             public Boolean prePage() {
                 if (isShow) {
+                    hideReadSetting();
                     return false;
                 }
 
@@ -294,6 +323,7 @@ public class ReaderActivity extends BaseActivity {
             @Override
             public Boolean nextPage() {
                 if (isShow ) {
+                    hideReadSetting();
                     return false;
                 }
 
@@ -342,12 +372,7 @@ public class ReaderActivity extends BaseActivity {
         bookPage = null;
     }
 
-    @Override
-    public void onBackPressed() {
-        Log.i(TAG, "onBackPressed: ");
-        super.onBackPressed();
-    }
-
+    @SuppressLint("CheckResult")
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         Log.i(TAG, "onKeyDown: ");
@@ -364,22 +389,26 @@ public class ReaderActivity extends BaseActivity {
                 mPageModeDialog.hide();
                 return true;
             }
-            finish();
+            Log.i(TAG, "onKeyDown: "+shelfBook);
+            if("network".equals(from)){
+                shelfBook.setBegin(pageFactory.getBegin());
+                Log.i(TAG, "onKeyDown: ?");
+                //本地历史
+                ReadInfo readInfo = new ReadInfo(shelfBook);
+                //todo userId
+                readInfo.setUserId(5L);
+                long endTime = System.currentTimeMillis();
+                long duration = millis2Minutes(endTime - startTime);
+                readInfo.setDuration(duration);
+                readInfo.setUpdateTime(endTime);
+                RxBus.getDefault().post(new ReadBookEvent(readInfo));
+                //服务器历史 todo
+            }
+
         }
         return super.onKeyDown(keyCode, event);
     }
 
-    public static void openBook(final ShelfBook shelfBook, Activity context) {
-        if (shelfBook == null) {
-            throw new NullPointerException("BookList can not be null");
-        }
-
-        Intent intent = new Intent(context, ReaderActivity.class);
-        intent.putExtra(EXTRA_BOOK_ID, shelfBook.getId());
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        context.overridePendingTransition(R.anim.in_from_right, R.anim.out_to_left);
-        context.startActivity(intent);
-    }
 
     /**
      * 隐藏菜单。沉浸式阅读
@@ -516,9 +545,17 @@ public class ReaderActivity extends BaseActivity {
 
         if(requestCode==CODE_REQUEST && resultCode==DirectoryActivity.CODE_RESULT && data!=null){
             long start = data.getLongExtra("start", 0L);
+            Log.i(TAG, "onActivityResult: "+start);
             pageFactory.changeChapter(start);
+            if (isShow) {
+                hideReadSetting();
+            }
         }
 
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    private long millis2Minutes(long duration) {
+        return  duration/ (1000 * 60);
     }
 }

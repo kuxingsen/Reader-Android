@@ -36,6 +36,8 @@
         <activity android:name=".ui.activity.DirectoryActivity" />
         <activity android:name=".ui.activity.SearchActivity" />
         <activity android:name=".ui.activity.BookInfoActivity" />
+        <activity android:name=".ui.activity.DownloadActivity" />
+        <activity android:name=".ui.activity.HistoryActivity" />
     </application>
 
 </manifest>

@@ -14,8 +14,7 @@
         app:layout_constraintRight_toRightOf="parent"
         android:background="?attr/colorPrimary"
         android:minHeight="?attr/actionBarSize"
-        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-        app:theme="@style/ThemeOverlay.AppCompat"
+        app:theme="@style/AppTheme"
         >
     </androidx.appcompat.widget.Toolbar>
     <TextView

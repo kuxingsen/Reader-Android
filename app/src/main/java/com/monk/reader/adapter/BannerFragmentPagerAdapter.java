@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BannerFragmentPagerAdapter extends FragmentPagerAdapter {
-    private static final String TAG = "BannerFragmentPagerAdapter";
+    private static final String TAG = "BannerPagerAdapter";
     private List<Banner> bannerList;
     private List<BannerFragment> bannerFragmentList;
     public BannerFragmentPagerAdapter(@NonNull FragmentManager fm, int behavior) {

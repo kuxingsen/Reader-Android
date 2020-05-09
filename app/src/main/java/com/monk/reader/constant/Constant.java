@@ -7,10 +7,6 @@ import androidx.annotation.StringDef;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-/**
- * Created by heyao on 2017/7/31.
- */
-
 public interface Constant {
     String CHANNEL = "channel";
     String BOOK_NAME = "book_name";

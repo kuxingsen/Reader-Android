@@ -63,7 +63,7 @@ public class SearchActivity extends BaseActivity {
 //    FrameLayout flShowBook;
 
     @Autowired(name = "categoryId")
-    public long categoryId = 1;//类别
+    public long categoryId = 1L;//类别
     private String search;//搜索内容
     private int length = 0;//字数
     private String order = "up_date";
@@ -74,8 +74,8 @@ public class SearchActivity extends BaseActivity {
     private int[] lengthArr = {0,1,2,3};
     private String[] lengthTextArr = {"不限","100万字以下","100-200万字","200万字以上"};
 
-    private String[] orderArr = {"up_date","star_avg","download_count","comment_count"};
-    private String[] orderTextArr = {"入库时间","评分","下载量","评论数"};
+    private String[] orderArr = {"up_date","star_avg","download_count","size"};
+    private String[] orderTextArr = {"最新","高分","下载最多","字数最多"};
 
     BookAdapter bookAdapter;
     List<Book> bookList;
@@ -98,6 +98,7 @@ public class SearchActivity extends BaseActivity {
     @Override
     protected void initAfter() {
         super.initAfter();
+        toolbar.setTitle("");
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         rvShowSearch.setLayoutManager(new LinearLayoutManager(this));
@@ -185,21 +186,24 @@ public class SearchActivity extends BaseActivity {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(result -> {
-                    Log.i(TAG, "initAfter: " + result);
                     List<Category> categoryList = result.getData();
                     setSpacing(rgCategory,12,8);
-                    RadioButton radioButton = new RadioButton(this);
-                    radioButton.setId(-1);
-                    radioButton.setTag(1L);
-                    radioButton.setText("不限");
-                    if(1 == categoryId) radioButton.setChecked(true);
-                    rgCategory.addView(radioButton);
-                    for (int i = 0; i < categoryList.size(); i++) {
-                        Category c = categoryList.get(i);
-                        radioButton = new RadioButton(this);
+                    for (int i = 0; i < categoryList.size()+1; i++) {
+                        if(i==0){
+                            RadioButton r = new RadioButton(this);
+                            r.setId(i);
+                            r.setTag(1L);
+                            r.setText("不限");
+                            if(1L == categoryId) r.setChecked(true);
+                            rgCategory.addView(r);
+                            continue;
+                        }
+                        Category c = categoryList.get(i-1);
+                        RadioButton radioButton = new RadioButton(this);
                         radioButton.setId(i);
                         radioButton.setTag(c.getId());
                         radioButton.setText(c.getName());
+                        Log.i(TAG, "initCategoryRadioGroup: "+c.getId()+"   "+categoryId);
                         if(c.getId() == categoryId) radioButton.setChecked(true);
                         rgCategory.addView(radioButton);
                     }
@@ -214,6 +218,7 @@ public class SearchActivity extends BaseActivity {
 
     @SuppressLint("CheckResult")
     private void update() {
+        Log.i(TAG, "update: "+categoryId+"  "+search);
         bookApi.getSelectedBookList(page, limit, search, categoryId, length, order)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())

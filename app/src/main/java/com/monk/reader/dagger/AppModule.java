@@ -7,12 +7,14 @@ import com.alibaba.android.arouter.launcher.ARouter;
 import com.monk.reader.AppManager;
 import com.monk.reader.dao.DaoMaster;
 import com.monk.reader.dao.DaoSession;
+import com.monk.reader.dao.ReadInfoDao;
 import com.monk.reader.dao.ShelfBookDao;
 import com.monk.reader.retrofit2.BannerApi;
 import com.monk.reader.retrofit2.BookApi;
 import com.monk.reader.retrofit2.BookCacheApi;
 import com.monk.reader.retrofit2.BookCatalogueApi;
 import com.monk.reader.retrofit2.CategoryApi;
+import com.monk.reader.retrofit2.DownloadApi;
 import com.monk.reader.retrofit2.RangeApi;
 import com.monk.reader.retrofit2.UserApi;
 import com.monk.reader.utils.SharedPreferencesUtils;
@@ -58,6 +60,11 @@ public class AppModule {
     @Provides
     public ShelfBookDao getShelfBookDao(DaoSession daoSession){
         return daoSession.getShelfBookDao();
+    }
+    @Singleton
+    @Provides
+    public ReadInfoDao getSReadInfoDao(DaoSession daoSession){
+        return daoSession.getReadInfoDao();
     }
     /*
      * ARouter
@@ -117,6 +124,11 @@ public class AppModule {
     @Provides
     public BookCacheApi initBookCacheApi(@Named("retrofit") Retrofit retrofit){
         return  retrofit.create(BookCacheApi.class);
+    }
+    @Singleton
+    @Provides
+    public DownloadApi initDownloadApi(@Named("retrofit") Retrofit retrofit){
+        return  retrofit.create(DownloadApi.class);
     }
     /*
      * SharedPreferences

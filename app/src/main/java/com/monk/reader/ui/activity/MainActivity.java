@@ -15,13 +15,21 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.alibaba.android.arouter.facade.annotation.Route;
+import com.monk.reader.AppManager;
 import com.monk.reader.R;
+import com.monk.reader.dao.ReadInfoDao;
+import com.monk.reader.dao.bean.ReadInfo;
+import com.monk.reader.eventbus.ReadBookEvent;
 import com.monk.reader.eventbus.RxBus;
 import com.monk.reader.eventbus.RxEvent;
 import com.monk.reader.eventbus.ShowActionBarCancel;
 import com.monk.reader.eventbus.HideShelfDeleteButton;
 import com.monk.reader.ui.base.BaseActivity;
 import com.monk.reader.ui.fragment.FragmentController;
+
+import java.util.List;
+
+import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.OnCheckedChanged;
@@ -35,6 +43,11 @@ public class MainActivity extends BaseActivity {
 
     private FragmentController mController;
 
+    @Inject
+    ReadInfoDao readInfoDao;
+    @Inject
+    AppManager appManager;
+
     @Override
     protected int inflateLayout() {
         return R.layout.activity_main;
@@ -43,6 +56,7 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void initBefore() {
         super.initBefore();
+        mApplication.getAppComponent().inject(this);
     }
 
     @Override
@@ -75,6 +89,10 @@ public class MainActivity extends BaseActivity {
                 if(isChecked)
                     mController.showFragment(1);
                 break;
+            case R.id.rb_download:
+                if(isChecked)
+                    mController.showFragment(2);
+                break;
         }
     }
 
@@ -82,6 +100,7 @@ public class MainActivity extends BaseActivity {
     protected void onDestroy() {
         super.onDestroy();
         FragmentController.onDestroy();
+        appManager.finishAllActivity();
     }
 
 
@@ -121,5 +140,34 @@ public class MainActivity extends BaseActivity {
         if (requestCode == 3) {
             Toast.makeText(this, "申请网络访问权限成功!", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    @Override
+    protected void onEventMainThread(RxEvent rxEvent) {
+        if (rxEvent instanceof ReadBookEvent) {
+            ReadBookEvent e = (ReadBookEvent)rxEvent;
+            ReadInfo readInfo = e.getReadInfo();
+            Log.i(TAG, "onEventMainThread: ReadBookEvent");
+            //增加或更新
+            if(!hasRead(readInfo)){
+                Log.i(TAG, "onEventMainThread: new record");
+                readInfoDao.save(readInfo);
+            }
+        }
+    }
+
+    private boolean hasRead(ReadInfo readInfo) {
+        List<ReadInfo> queryRaw = readInfoDao.queryRaw("where BOOK_ID=? and USER_ID=?", "" + readInfo.getBookId(),""+readInfo.getUserId());
+        Log.i(TAG, "hasRead: "+readInfo.getBookId()+"   "+readInfo.getUserId());
+        if(null != queryRaw && 0<queryRaw.size()){
+            ReadInfo tmp = queryRaw.get(0);
+            long duration = readInfo.getDuration() + tmp.getDuration();
+            tmp.setDuration(duration);
+            tmp.setUpdateTime(readInfo.getUpdateTime());
+            readInfoDao.update(tmp);
+            return true;
+        }
+        Log.i(TAG, "hasRead: nononono");
+        return false;
     }
 }

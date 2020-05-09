@@ -1,8 +1,5 @@
 package com.monk.reader.view;
 
-/**
- * Created by CAIYAO on 2017/9/6.
- */
 public interface DragGridListener {
     /**
      * 重新排列数据

@@ -27,15 +27,13 @@ import com.monk.reader.utils.SharedPreferencesUtils;
 import com.monk.reader.view.DragGridView;
 
 import java.io.File;
+import java.lang.ref.WeakReference;
 import java.util.List;
 
 import javax.inject.Inject;
 
 import butterknife.BindView;
 
-/**
- * Created by CAIYAO on 2017/7/24.
- */
 
 public class HomeFragment extends BaseFragment {
     private static final String TAG = "HomeFragment";
@@ -78,14 +76,11 @@ public class HomeFragment extends BaseFragment {
     @Override
     protected void initAfter() {
         Log.i(TAG, "initAfter: ");
-        // 删除窗口背景
-//        mActivity.getWindow().setBackgroundDrawable(null);
+
 //        daoSession.deleteAll(ShelfBook.class);
 //        sharedPreferencesUtils.putInt("shelf_count",0);
-
         shelfBookList = daoSession.queryBuilder(ShelfBook.class).orderRaw("position").list();
         adapter = new ShelfAdapter(mActivity, shelfBookList);
-
 
         fab.setOnClickListener(v -> {
 
@@ -115,6 +110,9 @@ public class HomeFragment extends BaseFragment {
                     String from = shelfBook.getFrom();
                     Log.i(TAG, "onItemClick: " + shelfBook);
                     Bundle bundle = new Bundle();
+                    bundle.putBoolean("inShelf",true);
+                    bundle.putString("from", from);
+                    bundle.putLong("begin",shelfBook.getBegin());
                     if("local".equals(from)){
                         File file = new File(path);
                         if (!file.exists()) {
@@ -127,11 +125,8 @@ public class HomeFragment extends BaseFragment {
                             return;
                         }
                         bundle.putLong(ReaderActivity.EXTRA_BOOK_ID, shelfBook.getId());
-                        bundle.putString("from", "local");
                     }else {
                         bundle.putLong(ReaderActivity.EXTRA_BOOK_ID, Long.valueOf(shelfBook.getPath()));
-                        bundle.putString("from", "network");
-                        bundle.putLong("begin",shelfBook.getBegin());
                     }
                     mActivity.overridePendingTransition(R.anim.in_from_right, R.anim.out_to_left);
                     ARouter.getInstance().build("/activity/reader")

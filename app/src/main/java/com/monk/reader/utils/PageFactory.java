@@ -48,9 +48,6 @@ import butterknife.ButterKnife;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
-/**
- * Created by Administrator on 2016/7/20 0020.
- */
 public class PageFactory {
     private static final String TAG = "PageFactory";
     private static PageFactory pageFactory;
@@ -111,8 +108,7 @@ public class PageFactory {
     private ShelfBook shelfBook;
     //书本章节
     private int currentCharter = 0;
-    //当前电量
-    private int level = 0;
+
     private BookUtil mBookUtil;
     private PageEvent mPageEvent;
     private TRPage currentPage;
@@ -282,14 +278,16 @@ public class PageFactory {
         }
 
         //更新数据库进度
-        if (currentPage != null && shelfBook != null && "local".equals(shelfBook.getFrom())) {
+        if (currentPage != null && shelfBook != null ) {
             new Thread() {
                 @Override
                 public void run() {
-                    super.run();
-                    //todo 更新进度
-                    shelfBook.setBegin(currentPage.getBegin());
-                    shelfBookDao.update(shelfBook);
+                    List<ShelfBook> queryRaw = shelfBookDao.queryRaw("where path=?", "" + shelfBook.getPath());
+                    if(null != queryRaw && 0<queryRaw.size()){
+                        Log.i(TAG, "run: 在书架上"+shelfBook.getPath());
+                        shelfBook.setBegin(currentPage.getBegin());
+                        shelfBookDao.update(shelfBook);
+                    }
                 }
             }.start();
         }
@@ -775,6 +773,9 @@ public class PageFactory {
     public void setDayOrNight(Boolean isNgiht) {
         initBg(isNgiht);
         currentPage(false);
+    }
+    public long getBegin(){
+        return currentPage==null?0L:currentPage.getBegin();
     }
 
     public void clear() {

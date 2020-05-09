@@ -119,7 +119,7 @@ public class CategoryFragment extends BaseFragment {
                     rvShowCategory.setAdapter(new CategoryAdapter(data));
 
                 }, Throwable::printStackTrace);
-        bookApi.getNewBookList(10,categoryId)
+        bookApi.getNewBookList(7,categoryId)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(result -> {

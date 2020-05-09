@@ -59,9 +59,9 @@ public class DirectoryActivity extends BaseActivity {
         tabLayout.setupWithViewPager(viewPager);
         TabLayout.Tab tab0 = tabLayout.getTabAt(0);
         tab0.setText("目录");
-
-        TabLayout.Tab tab1 = tabLayout.getTabAt(1);
-        tab1.setText("书签");
+//
+//        TabLayout.Tab tab1 = tabLayout.getTabAt(1);
+//        tab1.setText("书签");
     }
     class MyFragmentPagerAdapter extends FragmentPagerAdapter {
 
@@ -89,14 +89,14 @@ public class DirectoryActivity extends BaseActivity {
                     }
                     arrayAdapter = new ArrayAdapter<>(DirectoryActivity.this, android.R.layout.simple_list_item_1,directoryNameList);
                     break;
-                case 1:
-                    directoryNameList = new ArrayList<>();
-                    for(BookCatalogue catalogue:directoryList){
-                        directoryNameList.add(catalogue.getBookCatalogue());
-                    }
-                    arrayAdapter = new ArrayAdapter<>(DirectoryActivity.this, android.R.layout.simple_list_item_1,directoryNameList);
-
-                    break;
+//                case 1:
+//                    directoryNameList = new ArrayList<>();
+//                    for(BookCatalogue catalogue:directoryList){
+//                        directoryNameList.add(catalogue.getBookCatalogue());
+//                    }
+//                    arrayAdapter = new ArrayAdapter<>(DirectoryActivity.this, android.R.layout.simple_list_item_1,directoryNameList);
+//
+//                    break;
             }
             listFragment.setListAdapter(arrayAdapter);
             return listFragment;
@@ -104,7 +104,8 @@ public class DirectoryActivity extends BaseActivity {
 
         @Override
         public int getCount() {
-            return 2;
+            return 1;
+//            return 2;
         }
     }
 }

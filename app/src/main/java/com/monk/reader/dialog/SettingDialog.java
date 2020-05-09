@@ -22,9 +22,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-/**
- * Created by Administrator on 2016/7/26 0026.
- */
 public class SettingDialog extends Dialog {
 
     @BindView(R.id.tv_dark)

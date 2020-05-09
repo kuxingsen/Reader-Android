@@ -13,6 +13,7 @@ public class Book {
     private Long categoryId;
     private String categoryName;
 
+    private String path;
     private String charSet;
     private long size;//字节数
 
@@ -29,9 +30,18 @@ public class Book {
                 ", rangeValue='" + rangeValue + '\'' +
                 ", categoryId=" + categoryId +
                 ", categoryName='" + categoryName + '\'' +
+                ", path='" + path + '\'' +
                 ", charSet='" + charSet + '\'' +
                 ", size=" + size +
                 '}';
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
     }
 
     public long getSize() {
